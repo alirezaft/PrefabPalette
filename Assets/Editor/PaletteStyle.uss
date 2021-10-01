@@ -3,3 +3,7 @@ Label {
     -unity-font-style: bold;
     color: rgb(68, 138, 255);
 }
+
+.prefab-field {
+    
+}
