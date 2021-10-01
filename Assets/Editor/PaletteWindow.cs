@@ -30,6 +30,11 @@ public class PaletteWindow : EditorWindow
     private const string NO_PREFAB_TEXT = "No  prefab selected";
     #endregion
 
+    #region numerical_constants
+    private const float PREFAB_PREVIEW_IMAGE_SIZE = 112;
+
+    #endregion
+
     private int m_NumberOfItems;
     
     private List<GameObject> m_Palette;
@@ -74,12 +79,12 @@ public class PaletteWindow : EditorWindow
 
     private void SetPrefabLabel(string text, Label label){
         label.text = text;
-        Debug.Log(label.text + " " + text);
+
     }
 
     private void SetPrefabSelectorImage(Texture2D background, Image selector){
         selector.image = background;
-        selector.style.width = new StyleLength(64);
-        selector.style.height = new StyleLength(64);
+        selector.style.width = new StyleLength(PREFAB_PREVIEW_IMAGE_SIZE);
+        selector.style.height = new StyleLength(PREFAB_PREVIEW_IMAGE_SIZE);
     }
 }

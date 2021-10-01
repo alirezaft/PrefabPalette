@@ -5,6 +5,8 @@
     xmlns:editor="UnityEditor.UIElements"
     xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
 >
-    <engine:Image  name="prefab-field" class="prefab-field" allow-scene-objects="false"/>    
-    <engine:Label name="prefab-name"/>
+    <engine:VisualElement class="prefab-container-slot" style="align-items: center;">
+        <engine:Image  name="prefab-field" class="prefab-field" allow-scene-objects="false"/>    
+        <engine:Label name="prefab-name" class="prefab-name"/>
+    </engine:VisualElement>
 </engine:UXML>
