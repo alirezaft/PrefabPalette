@@ -46,10 +46,11 @@ public class PaletteWindow : EditorWindow
         var root = this.rootVisualElement;
         uxmlFile.CloneTree(root);
         m_NumberOfItems = 1;
-
+        
         root.Query<Button>(BUTTON_ADD_PREFAB).First().clicked += OnAddSlotButtonPressed;
         m_ScrollView = root.Query<ScrollView>(SCROLL_VIEW_PREFAB_CONTAINER).First();
         m_ScrollView.contentContainer.RegisterCallback<GeometryChangedEvent>(OnScrollViewGeometryChange);
+        Debug.Log(m_ScrollView.verticalScroller.highValue); 
         InstantiateNewPrefabSlot();
         m_Palette = new List<GameObject>();  
     }       
@@ -61,7 +62,11 @@ public class PaletteWindow : EditorWindow
     }
 
     private void OnScrollViewGeometryChange(GeometryChangedEvent evt){
-        m_ScrollView.verticalScroller.value = m_ScrollView.verticalScroller.highValue;
+        Debug.Log(m_ScrollView.verticalScroller.highValue);
+         
+        if(!m_ScrollView.verticalScroller.ClassListContains(VisualElement.disabledUssClassName))
+            m_ScrollView.verticalScroller.value = m_ScrollView.verticalScroller.highValue;
+        Debug.Log(m_ScrollView.scrollOffset);
     }
 
     private void InstantiateNewPrefabSlot(){
@@ -74,7 +79,6 @@ public class PaletteWindow : EditorWindow
         m_NumberOfItems++; 
         m_ScrollView.ScrollTo(m_ScrollView.Query<Image>(IMAGE_PREFAB_FIELD).Last());
         // m_ScrollView.scrollOffset = new Vector2(0f, m_ScrollView.scrollOffset.y + 139.2f); 
-        Debug.Log(m_ScrollView.scrollOffset);
     }
 
     private void OnPrefabDrag(VisualElement vis){
