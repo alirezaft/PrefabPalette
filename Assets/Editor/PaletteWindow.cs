@@ -49,6 +49,7 @@ public class PaletteWindow : EditorWindow
 
         root.Query<Button>(BUTTON_ADD_PREFAB).First().clicked += OnAddSlotButtonPressed;
         m_ScrollView = root.Query<ScrollView>(SCROLL_VIEW_PREFAB_CONTAINER).First();
+        m_ScrollView.contentContainer.RegisterCallback<GeometryChangedEvent>(OnScrollViewGeometryChange);
         InstantiateNewPrefabSlot();
         m_Palette = new List<GameObject>();  
     }       
@@ -59,6 +60,10 @@ public class PaletteWindow : EditorWindow
         window.Show();
     }
 
+    private void OnScrollViewGeometryChange(GeometryChangedEvent evt){
+        m_ScrollView.verticalScroller.value = m_ScrollView.verticalScroller.highValue;
+    }
+
     private void InstantiateNewPrefabSlot(){
         var newSlot = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(PREFAB_SLOT_VISUAL_TREE_PATH);
         m_ScrollView.Add(newSlot.Instantiate()); 
@@ -66,7 +71,10 @@ public class PaletteWindow : EditorWindow
         // createdField.objectType = typeof(Texture2D);
         SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(NO_PREFAB_SELECTED_IMAGE_PATH), createdField);
         SetPrefabLabel(NO_PREFAB_TEXT, m_ScrollView.Query<Label>(LABEL_PREFAB_NAME).Last());
-        m_NumberOfItems++;
+        m_NumberOfItems++; 
+        m_ScrollView.ScrollTo(m_ScrollView.Query<Image>(IMAGE_PREFAB_FIELD).Last());
+        // m_ScrollView.scrollOffset = new Vector2(0f, m_ScrollView.scrollOffset.y + 139.2f); 
+        Debug.Log(m_ScrollView.scrollOffset);
     }
 
     private void OnPrefabDrag(VisualElement vis){
