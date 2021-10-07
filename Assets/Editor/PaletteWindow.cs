@@ -118,7 +118,7 @@ public class PaletteWindow : EditorWindow
         var parent = element.parent.parent;
         var index = m_ScrollView.IndexOf(element.parent.parent);
         
-        if(DragAndDrop.objectReferences[0] is GameObject){
+        if(DragAndDrop.objectReferences[0] is GameObject && AssetDatabase.Contains(DragAndDrop.objectReferences[0])){
             ChangeBorderColor(element, Color.green);
         }else{
             ChangeBorderColor(element, Color.red);
