@@ -99,7 +99,12 @@ public class PaletteWindow : EditorWindow
         var prefabs = DragAndDrop.objectReferences;
         if(prefabs.Length > 0){
             if(prefabs[0] is GameObject && AssetDatabase.Contains(prefabs[0])){
-                m_Palette.Insert(index, prefabs[0] as GameObject);
+                if(m_Palette.Count < index + 1){
+                    for(int i = m_Palette.Count; i < index; i++){
+                        m_Palette.Add(null);
+                    }
+                }
+
                 SetPrefabSelectorImage(AssetPreview.GetAssetPreview(prefabs[0]), element as Image);
                 SetPrefabLabel(prefabs[0].name, element.parent.Q<Label>());
             }
