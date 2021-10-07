@@ -113,15 +113,17 @@ public class PaletteWindow : EditorWindow
     }
 
     private void OnDraggingPrefabUpdated(DragUpdatedEvent evt){
-        DragAndDrop.visualMode = DragAndDropVisualMode.Link;
+        
         var element = evt.target as VisualElement;
         var parent = element.parent.parent;
         var index = m_ScrollView.IndexOf(element.parent.parent);
         
         if(DragAndDrop.objectReferences[0] is GameObject && AssetDatabase.Contains(DragAndDrop.objectReferences[0])){
             ChangeBorderColor(element, Color.green);
+            DragAndDrop.visualMode = DragAndDropVisualMode.Link;
         }else{
             ChangeBorderColor(element, Color.red);
+            DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
         }
     }
 
