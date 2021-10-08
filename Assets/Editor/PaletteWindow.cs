@@ -132,13 +132,16 @@ public class PaletteWindow : EditorWindow
         var element = evt.target as VisualElement;
         var parent = element.parent.parent;
         
-        ChangeBorderColor(element, Color.white);        
-        m_CurrentIndex = m_ScrollView.IndexOf(element.parent.parent);
+        if(DragAndDrop.objectReferences.Length == 0){
+            ChangeBorderColor(element, Color.white);        
+            m_CurrentIndex = m_ScrollView.IndexOf(element.parent.parent);
+        }
  
     }
 
     private void OnPrefabLeaveSlotBounds(MouseLeaveEvent evt){
         var element = evt.target as VisualElement;
+        Debug.Log("LEAVE MOUSE");
         ChangeBorderColor(element);
         m_CurrentIndex = -1;
         m_IsMouseOnElement = false;
