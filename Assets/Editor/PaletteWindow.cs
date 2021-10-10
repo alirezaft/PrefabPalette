@@ -36,6 +36,7 @@ public class PaletteWindow : EditorWindow
     #endregion
 
     private bool m_IsMouseOnElement;
+    private bool m_IsInstantiating;
     private int m_NumberOfItems;
     private int m_CurrentIndex;
     
@@ -54,8 +55,8 @@ public class PaletteWindow : EditorWindow
         m_ScrollView = root.Query<ScrollView>(SCROLL_VIEW_PREFAB_CONTAINER).First();
         m_ScrollView.contentContainer.RegisterCallback<GeometryChangedEvent>(OnScrollViewGeometryChange);
         InstantiateNewPrefabSlot();
-        m_Palette = new List<GameObject>();  
-        
+        m_Palette = new List<GameObject>();
+        m_IsInstantiating = false;
     }    
 
     [MenuItem(PREFAB_PALETTE_MENU_PATH)]
@@ -89,7 +90,8 @@ public class PaletteWindow : EditorWindow
         element.RegisterCallback<MouseEnterEvent>(OnMouseEnteredSlotBounds);
         element.RegisterCallback<MouseLeaveEvent>(OnPrefabLeaveSlotBounds);
         element.RegisterCallback<DragUpdatedEvent>(OnDraggingPrefabUpdated);
-        // element.RegisterCallback<DragExitedEvent>(OnPrefabDragExit);
+        element.RegisterCallback<PointerDownEvent>(OnPrefabSlotDragStart);
+        element.RegisterCallback<PointerUpEvent>(OnPrefabSlotDragFinished);
     }
 
     private void OnPrefabDroppedIntoSlot(DragPerformEvent evt){
@@ -103,25 +105,28 @@ public class PaletteWindow : EditorWindow
                     for(int i = m_Palette.Count; i < index; i++){
                         m_Palette.Add(null);
                     }
+                }else{
+                    return;
                 }
 
                 SetPrefabSelectorImage(AssetPreview.GetAssetPreview(prefabs[0]), element as Image);
                 SetPrefabLabel(prefabs[0].name, element.parent.Q<Label>());
+                m_Palette.Insert(index, prefabs[0] as GameObject);
             }
         }
         ChangeBorderColor(element, Color.white);
     }
 
     private void OnDraggingPrefabUpdated(DragUpdatedEvent evt){
-        
+        Debug.Log("inst? " + m_IsInstantiating);
         var element = evt.target as VisualElement;
         var parent = element.parent.parent;
         var index = m_ScrollView.IndexOf(element.parent.parent);
         
-        if(DragAndDrop.objectReferences[0] is GameObject && AssetDatabase.Contains(DragAndDrop.objectReferences[0])){
+        if(DragAndDrop.objectReferences[0] is GameObject && AssetDatabase.Contains(DragAndDrop.objectReferences[0]) && !m_IsInstantiating){
             ChangeBorderColor(element, Color.green);
             DragAndDrop.visualMode = DragAndDropVisualMode.Link;
-        }else{
+        }else if(!m_IsInstantiating){
             ChangeBorderColor(element, Color.red);
             DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
         }
@@ -141,8 +146,9 @@ public class PaletteWindow : EditorWindow
 
     private void OnPrefabLeaveSlotBounds(MouseLeaveEvent evt){
         var element = evt.target as VisualElement;
-        Debug.Log("LEAVE MOUSE");
-        ChangeBorderColor(element);
+        if(!m_IsInstantiating){
+            ChangeBorderColor(element);
+        }
         m_CurrentIndex = -1;
         m_IsMouseOnElement = false;
 
@@ -150,6 +156,36 @@ public class PaletteWindow : EditorWindow
 
     private void OnPrefabDragExit(DragExitedEvent evt){
         //Do nothing
+    }
+
+    private void OnPrefabSlotDragStart(PointerDownEvent evt){
+        Debug.Log("POINTER IS DOWN!");
+        var element = evt.target as VisualElement;
+        var parent = element.parent.parent;
+        var index = m_ScrollView.IndexOf(element.parent.parent);
+        
+        if(m_Palette.Count <= index || m_Palette[index] == null || DragAndDrop.objectReferences.Length != 0)
+            return;
+
+        if(!m_IsInstantiating){ 
+            Debug.Log("I GOT YOU");
+            ChangeBorderColor(element, Color.blue);
+            m_IsInstantiating = true;
+            DragAndDrop.PrepareStartDrag();
+            DragAndDrop.StartDrag("Instantiate");
+            DragAndDrop.visualMode = DragAndDropVisualMode.Link;
+            DragAndDrop.objectReferences = new Object[]{m_Palette[index]};
+        }
+    }
+
+    private void OnPrefabSlotDragFinished(PointerUpEvent evt){
+        var element = evt.target as VisualElement;
+        var parent = element.parent.parent;
+        var index = m_ScrollView.IndexOf(element.parent.parent);
+
+        DragAndDrop.visualMode = DragAndDropVisualMode.None;
+        m_IsInstantiating = false;
+        ChangeBorderColor(element);
     }
 
     private void OnAddSlotButtonPressed(){
