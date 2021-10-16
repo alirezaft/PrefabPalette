@@ -37,10 +37,12 @@ public class PaletteWindow : EditorWindow
 
     private bool m_IsMouseOnElement;
     private bool m_IsInstantiating;
+    private bool m_IsInContextMenu;
     private int m_NumberOfItems;
     private int m_CurrentIndex;
     
     private List<GameObject> m_Palette;
+    private Dictionary<int, int> slotToListDictionary;
 
     private ScrollView m_ScrollView;
     private VisualElement m_CurrentElemetn;
@@ -56,6 +58,7 @@ public class PaletteWindow : EditorWindow
         m_ScrollView.contentContainer.RegisterCallback<GeometryChangedEvent>(OnScrollViewGeometryChange);
         InstantiateNewPrefabSlot();
         m_Palette = new List<GameObject>();
+        slotToListDictionary = new Dictionary<int, int>();
         m_IsInstantiating = false;
     }
 
@@ -94,6 +97,8 @@ public class PaletteWindow : EditorWindow
         element.RegisterCallback<PointerDownEvent>(OnPrefabSlotDragStart);
         element.RegisterCallback<PointerUpEvent>(OnPrefabSlotDragFinished);
         element.RegisterCallback<DragLeaveEvent>(OnPrefabSlotDragLEave);
+        element.AddManipulator(new ContextualMenuManipulator(OnRightClickOnPrefabPreview));
+//        element.AddManipulator(new ContextualMenuManipulator(OnRightClickOnPrefabPreview));
     }
 
     private void OnPrefabSlotDragLEave(DragLeaveEvent evt){
@@ -104,25 +109,60 @@ public class PaletteWindow : EditorWindow
         m_IsInstantiating = false;
     }
 
-    private void OnPrefabDroppedIntoSlot(DragPerformEvent evt){
+    private void OnRightClickOnPrefabPreview(ContextualMenuPopulateEvent evt){
+        var element = evt.target as VisualElement;
+        m_CurrentIndex = m_ScrollView.IndexOf(element.parent.parent);
+        m_IsInContextMenu = true;
         
+        Debug.Log("CONTEXT #" + m_ScrollView.IndexOf(element.parent.parent));
+        
+        evt.menu.AppendAction("Remove prefab", RemovePrefab, m_Palette.Count > 1 || m_Palette[0] != null ? DropdownMenuAction.Status.Normal : 
+            DropdownMenuAction.Status.Disabled);
+    }
+
+    private void RemovePrefab(DropdownMenuAction action){
+        m_Palette.RemoveAt(m_CurrentIndex);
+        for (int i = 0; i < m_Palette.Count; i++)
+        {
+            if (m_Palette[i] == null && i != m_Palette.Count - 1)
+            {
+                m_Palette[i] = m_Palette[i + 1];
+            }
+        }
+        m_Palette.TrimExcess();
+        if(m_Palette.Count > 1){
+            m_ScrollView.RemoveAt(m_CurrentIndex);
+        }else{
+            var el = m_ScrollView.ElementAt(m_CurrentIndex);
+            SetPrefabLabel(NO_PREFAB_TEXT, el.Q<Label>());
+            SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(NO_PREFAB_SELECTED_IMAGE_PATH), el.Q<Image>());
+        }
+    }
+
+    private void OnPrefabDroppedIntoSlot(DragPerformEvent evt){
+        Debug.Log("DASSGKTLHMT@$%@%@ Drag"); 
         var element = evt.target as VisualElement;
         var index = m_ScrollView.IndexOf(element.parent.parent);
         // EditorUtility.Select
         var prefabs = DragAndDrop.objectReferences;
         if(prefabs.Length > 0){
             if(prefabs[0] is GameObject && AssetDatabase.Contains(prefabs[0])){
-                if(m_Palette.Count < index + 1){
-                    for(int i = m_Palette.Count; i < index; i++){
-                        m_Palette.Add(null);
-                    }
-                }else{
-                    return;
+                m_Palette.Add(prefabs[0] as GameObject);
+                if (!slotToListDictionary.ContainsKey(index))
+                {
+                    slotToListDictionary.Add(index, m_Palette.Count - 1);
+                    m_Palette.Add(prefabs[0] as GameObject);
+                }
+                else
+                {
+                    m_Palette.Insert(slotToListDictionary[index], prefabs[0] as GameObject); 
                 }
 
-                SetPrefabSelectorImage(AssetPreview.GetAssetPreview(prefabs[0]), element as Image);
+//                Debug.Log("The element of list #: " + (m_Palette.Count - 1) + " is inserted in slot #" + slotToListDictionary[m_Palette.Count - 1]);
+//                m_Palette.Insert(m_Palette.Count - 1, prefabs[0] as GameObject);
+                SetPrefabSelectorImage(AssetPreview.GetAssetPreview(prefabs[0]), element as Image); 
                 SetPrefabLabel(prefabs[0].name, element.parent.Q<Label>());
-                m_Palette.Insert(index, prefabs[0] as GameObject);
+                
             }
         }
         ChangeBorderColor(element, Color.white);
@@ -159,7 +199,10 @@ public class PaletteWindow : EditorWindow
         if(!m_IsInstantiating){
             ChangeBorderColor(element);
         }
-        m_CurrentIndex = -1;
+        
+        if(!m_IsInContextMenu)
+            m_CurrentIndex = -1;
+        
         m_IsMouseOnElement = false;
 
     }
@@ -185,7 +228,7 @@ public class PaletteWindow : EditorWindow
             DragAndDrop.PrepareStartDrag();
             DragAndDrop.StartDrag("Instantiate");
             DragAndDrop.visualMode = DragAndDropVisualMode.Link;
-            DragAndDrop.objectReferences = new Object[]{m_Palette[index]};
+            DragAndDrop.objectReferences = new Object[]{m_Palette[slotToListDictionary[index]]};
             
         }
     }
