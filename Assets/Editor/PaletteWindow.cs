@@ -98,7 +98,6 @@ public class PaletteWindow : EditorWindow
         element.RegisterCallback<PointerUpEvent>(OnPrefabSlotDragFinished);
         element.RegisterCallback<DragLeaveEvent>(OnPrefabSlotDragLEave);
         element.AddManipulator(new ContextualMenuManipulator(OnRightClickOnPrefabPreview));
-//        element.AddManipulator(new ContextualMenuManipulator(OnRightClickOnPrefabPreview));
     }
 
     private void OnPrefabSlotDragLEave(DragLeaveEvent evt){
@@ -116,9 +115,13 @@ public class PaletteWindow : EditorWindow
         m_IsInContextMenu = true;
         
         Debug.Log("CONTEXT #" + m_ScrollView.IndexOf(element.parent.parent));
+        bool foundGo = slotToListDictionary.ContainsKey(m_CurrentIndex) && m_Palette[slotToListDictionary[m_CurrentIndex]] != null;
         
-        evt.menu.AppendAction("Remove prefab", RemovePrefab, m_Palette.Count > 1 || m_Palette[0] != null ? DropdownMenuAction.Status.Normal : 
-            DropdownMenuAction.Status.Disabled);
+        evt.menu.AppendAction("Remove prefab", RemovePrefab, foundGo ? DropdownMenuAction.Status.Normal : 
+         DropdownMenuAction.Status.Disabled);
+
+        evt.menu.AppendAction("Ping", PingPrefabAsset, foundGo ? DropdownMenuAction.Status.Normal :
+         DropdownMenuAction.Status.Disabled);
     }
 
     private void RemovePrefab(DropdownMenuAction action){
@@ -251,6 +254,9 @@ public class PaletteWindow : EditorWindow
     }
 
     private void OnPrefabSlotDragStart(PointerDownEvent evt){
+        if(m_IsInstantiating){
+            return;
+        }
         
         var element = evt.target as VisualElement;
         var parent = element.parent.parent;
@@ -310,6 +316,11 @@ public class PaletteWindow : EditorWindow
         selector.image = background;
         selector.style.width = new StyleLength(PREFAB_PREVIEW_IMAGE_SIZE);
         selector.style.height = new StyleLength(PREFAB_PREVIEW_IMAGE_SIZE);
+    }
+
+    private void PingPrefabAsset(DropdownMenuAction action){
+        int index = slotToListDictionary[m_CurrentIndex];
+        EditorGUIUtility.PingObject(m_Palette[index]);
     }
 
     private void ChangeBorderColor(VisualElement element, Color color){
