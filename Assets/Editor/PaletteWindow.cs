@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 using UnityEditor.UIElements;
  
 
-public class PaletteWindow : EditorWindow
+public class PaletteWindow : EditorWindow, IHasCustomMenu
 {
     #region paths
     private const string MAIN_VISUAL_ASSET_TREE_PATH = "Assets/Editor/PaletteWindow.uxml";
@@ -60,6 +60,10 @@ public class PaletteWindow : EditorWindow
         m_Palette = new List<GameObject>();
         slotToListDictionary = new Dictionary<int, int>();
         m_IsInstantiating = false;
+    }
+
+    public void AddItemsToMenu(GenericMenu menu){
+        menu.AddItem(new GUIContent("Save palette"), false, SavePalette);
     }
 
     [MenuItem(PREFAB_PALETTE_MENU_PATH)]
@@ -177,6 +181,18 @@ public class PaletteWindow : EditorWindow
 
         m_IsInContextMenu = false;
         m_CurrentIndex = -1;
+    }
+
+    
+    public void SavePalette(){
+        PaletteData data = new PaletteData();
+        data.Palette = m_Palette;
+        var path = EditorUtility.SaveFilePanel("Save Prefab palette", "Assets", "", "asset");
+        path = path.Remove(0, path.IndexOf("/Assets/"));
+        path = path.Remove(0, 1);
+        Debug.Log(path);
+        AssetDatabase.CreateAsset(data, path);
+        AssetDatabase.SaveAssets();
     }
 
     private void OnPrefabDroppedIntoSlot(DragPerformEvent evt)
