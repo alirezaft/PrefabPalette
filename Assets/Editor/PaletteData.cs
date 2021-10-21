@@ -5,6 +5,4 @@ using UnityEngine;
 public class PaletteData : ScriptableObject
 {
     public List<GameObject> Palette;
-    public string Name;
-    
 }
