@@ -5,7 +5,7 @@
     xmlns:editor="UnityEditor.UIElements"
     xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
 >
-    <engine:VisualElement class="prefab-container-slot" style="align-items: center; margin-top: 7px">
+    <engine:VisualElement name="prefab-container-slot" class="prefab-container-slot" style="align-items: center; margin-top: 7px">
         <engine:Image  name="prefab-field" class="prefab-field" allow-scene-objects="false"/>    
         <engine:Label name="prefab-name" class="prefab-name" style="margin-top: 5px;"/>
         <editor:ToolbarSpacer/>

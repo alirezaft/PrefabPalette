@@ -20,6 +20,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private const string SCROLL_VIEW_PREFAB_CONTAINER = "prefab-container";
     private const string IMAGE_PREFAB_FIELD = "prefab-field";
     private const string LABEL_PREFAB_NAME = "prefab-name";
+    private const string PREFAB_SLOT_CONTAINER_NAME = "prefab-container-slot";
     #endregion
 
     #region uxml element classes
@@ -32,7 +33,11 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     #region numerical constants
     private const float PREFAB_PREVIEW_IMAGE_SIZE = 112;
+    #endregion
 
+    #region color values
+    private const float EVEN_SLOT_GREY = 0.16f;
+    private const float ODD_SLOT_GREY = 0.18f;
     #endregion
 
     private bool m_IsMouseOnElement;
@@ -76,7 +81,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private void OnScrollViewGeometryChange(GeometryChangedEvent evt){
          
         if(!m_ScrollView.verticalScroller.ClassListContains(VisualElement.disabledUssClassName))
-            m_ScrollView.verticalScroller.value = m_ScrollView.verticalScroller.highValue;
+            m_ScrollView.verticalScroller.value = m_ScrollView.verticalScroller.highValue; 
         
     }
 
@@ -85,12 +90,24 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         m_ScrollView.Add(newSlot.Instantiate()); 
         var createdField = m_ScrollView.Query<Image>(IMAGE_PREFAB_FIELD).Last();
 
+        if(m_ScrollView.childCount % 2 == 0){
+            SetSlotBackgroundColor(m_ScrollView.Query<TemplateContainer>().Last(), 
+            new Color(EVEN_SLOT_GREY, EVEN_SLOT_GREY, EVEN_SLOT_GREY));
+        }else{
+            SetSlotBackgroundColor(m_ScrollView.Query<TemplateContainer>().Last(), 
+            new Color(ODD_SLOT_GREY, ODD_SLOT_GREY, ODD_SLOT_GREY)); 
+        }
+
         RegisterDragAndDropCallbacks(createdField);
         SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(NO_PREFAB_SELECTED_IMAGE_PATH), createdField);
         SetPrefabLabel(NO_PREFAB_TEXT, m_ScrollView.Query<Label>(LABEL_PREFAB_NAME).Last());
 
         m_NumberOfItems++; 
         m_ScrollView.ScrollTo(m_ScrollView.Query<Image>(IMAGE_PREFAB_FIELD).Last());      
+    }
+
+    private void SetSlotBackgroundColor(VisualElement vis, Color col){
+        vis.style.backgroundColor = new StyleColor(col);
     }
 
     private void RegisterDragAndDropCallbacks(Image element){
@@ -171,14 +188,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         
         
         m_Palette.TrimExcess();
-        // if(m_Palette.Count > 1){
-            
-            
-        // }else{
-        //     var el = m_ScrollView.ElementAt(m_CurrentIndex);
-        //     SetPrefabLabel(NO_PREFAB_TEXT, el.Q<Label>());
-        //     SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(NO_PREFAB_SELECTED_IMAGE_PATH), el.Q<Image>());
-        // }
 
         m_IsInContextMenu = false;
         m_CurrentIndex = -1;
@@ -212,6 +221,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         m_ScrollView.Clear();
         m_Palette.Clear();
         slotToListDictionary.Clear();
+        
         int i = 0;
         slotToListDictionary.Clear();
         m_Palette.Clear();
@@ -223,6 +233,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             slotToListDictionary.Add(i, i);
             m_Palette.Add(go);
             SetPrefabLabel(go.name, slotlabel);
+            i++;
         }
     }
 
