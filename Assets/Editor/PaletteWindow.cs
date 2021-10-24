@@ -149,7 +149,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private void RemovePrefab(DropdownMenuAction action){
         Debug.Log("Count: " + slotToListDictionary.Count);
         Debug.Log("Chosen element: " + m_CurrentIndex);
-        if (slotToListDictionary.Count == 1)
+        if (slotToListDictionary.Count == 1 && m_Palette.Count == 1 && m_ScrollView.childCount == 1)
         { 
             Debug.Log("EMPTY LIST NOW");
             m_Palette.Clear();
