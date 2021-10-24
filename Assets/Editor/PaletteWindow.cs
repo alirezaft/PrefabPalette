@@ -340,9 +340,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         {
             Debug.Log("<i: " + i + ", name: " + m_Palette[i] + ">");
         }
-        
-        if(m_Palette.Count <= index || m_Palette[slotToListDictionary[index]] == null || DragAndDrop.objectReferences.Length != 0)
-            return;
+
 
         if(!m_IsInstantiating && slotToListDictionary.ContainsKey(index)){ 
             
