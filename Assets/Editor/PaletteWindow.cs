@@ -13,6 +13,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private const string PREFAB_SLOT_VISUAL_TREE_PATH = "Assets/Editor/PrefabSlot.uxml";
     private const string PREFAB_PALETTE_MENU_PATH = "Window/Prefab Palette";
     private const string NO_PREFAB_SELECTED_IMAGE_PATH = "Assets/Editor/Textures/NoPrefabImg.jpg";
+    private const string EMPTY_PREFAB_IMAGE_PATH = "Assets/Editor/Textures/EmptyPrefab.png";
     #endregion
 
     #region uxml element names
@@ -265,7 +266,13 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
                     m_Palette.Insert(slotToListDictionary[index], prefabs[0] as GameObject); 
                 }
                 
-                SetPrefabSelectorImage(AssetPreview.GetAssetPreview(prefabs[0]), element as Image); 
+                var preview = AssetPreview.GetAssetPreview(prefabs[0]);
+
+                if(preview != null){
+                    SetPrefabSelectorImage(AssetPreview.GetAssetPreview(prefabs[0]), element as Image);
+                }else{
+                    SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(EMPTY_PREFAB_IMAGE_PATH), element as Image);
+                }
                 SetPrefabLabel(prefabs[0].name, element.parent.Q<Label>());
                 
             }
@@ -321,10 +328,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     }
 
     private void OnPrefabSlotDragStart(PointerDownEvent evt){
-        if(m_IsInstantiating){
-            return;
-        }
-        
         var element = evt.target as VisualElement;
         var parent = element.parent.parent;
         var index = m_ScrollView.IndexOf(element.parent.parent);
