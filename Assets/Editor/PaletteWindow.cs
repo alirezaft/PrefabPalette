@@ -345,7 +345,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         }
 
 
-        if(!m_IsInstantiating && slotToListDictionary.ContainsKey(index)){ 
+        if(!m_IsInstantiating && slotToListDictionary.ContainsKey(index) && evt.button != 1){ 
             
             ChangeBorderColor(element, Color.blue);
             m_IsInstantiating = true;
