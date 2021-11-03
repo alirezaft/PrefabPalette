@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
+// using Unity.EditorCoroutines.Editor;
  
 
 public class PaletteWindow : EditorWindow, IHasCustomMenu
@@ -53,6 +54,8 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private ScrollView m_ScrollView;
     private VisualElement m_CurrentElemetn;
 
+    private GameObject m_GetPreviewForThis;
+
     private void OnEnable(){
         var uxmlFile = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(MAIN_VISUAL_ASSET_TREE_PATH);
         var root = this.rootVisualElement;
@@ -66,6 +69,11 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         m_Palette = new List<GameObject>();
         slotToListDictionary = new Dictionary<int, int>();
         m_IsInstantiating = false;
+        m_GetPreviewForThis = null;
+    }
+
+    private void OnGUI() {
+        // if(m_GetPreviewForThis != null){}
     }
 
     public void AddItemsToMenu(GenericMenu menu){
@@ -229,7 +237,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         foreach(GameObject go in loadedPalette.Palette){
             InstantiateNewPrefabSlot();
             var slotimg = m_ScrollView.Query<Image>("prefab-field").Last();
-            SetPrefabSelectorImage(AssetPreview.GetAssetPreview(go), slotimg);
+            SetPrefabSelectorImage(GetAssetPreview(go), slotimg);
             var slotlabel = m_ScrollView.Query<Label>("prefab-name").Last();
             slotToListDictionary.Add(i, i);
             m_Palette.Add(go);
@@ -266,10 +274,10 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
                     m_Palette.Insert(slotToListDictionary[index], prefabs[0] as GameObject); 
                 }
                 
-                var preview = AssetPreview.GetAssetPreview(prefabs[0]);
+                var preview = GetAssetPreview(prefabs[0] as GameObject);
 
                 if(preview != null){
-                    SetPrefabSelectorImage(AssetPreview.GetAssetPreview(prefabs[0]), element as Image);
+                    SetPrefabSelectorImage(GetAssetPreview(prefabs[0] as GameObject), element as Image);
                 }else{
                     SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(EMPTY_PREFAB_IMAGE_PATH), element as Image);
                 }
@@ -403,5 +411,20 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         element.style.borderBottomColor = new StyleColor();
         element.style.borderLeftColor = new StyleColor();
         element.style.borderRightColor = new StyleColor();
+    }
+
+    private Texture2D GetAssetPreview(GameObject obj){
+        if(obj.GetComponents<Renderer>() == null && obj.GetComponentInChildren<Renderer>() == null){
+            return null;
+        }
+        
+        Texture2D res = null;
+
+        do
+        {
+            res = AssetPreview.GetAssetPreview(obj);
+        } while (res == null);
+
+        return res;
     }
 }
