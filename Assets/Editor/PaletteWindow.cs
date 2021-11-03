@@ -414,7 +414,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     }
 
     private Texture2D GetAssetPreview(GameObject obj){
-        if(obj.GetComponents<Renderer>() == null && obj.GetComponentInChildren<Renderer>() == null){
+        if(obj.GetComponent<Renderer>() == null && obj.GetComponentInChildren<Renderer>() == null){
             return null;
         }
         
