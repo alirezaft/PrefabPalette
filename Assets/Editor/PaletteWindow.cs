@@ -158,12 +158,13 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private void RemovePrefab(DropdownMenuAction action){
         Debug.Log("Count: " + slotToListDictionary.Count);
         Debug.Log("Chosen element: " + m_CurrentIndex);
+        var el = m_ScrollView.ElementAt(m_CurrentIndex);
+
         if (slotToListDictionary.Count == 1 && m_Palette.Count == 1 && m_ScrollView.childCount == 1)
         {
             Debug.Log("EMPTY LIST NOW");
             m_Palette.Clear();
             slotToListDictionary.Clear();
-            var el = m_ScrollView.ElementAt(m_CurrentIndex);
             SetPrefabLabel(NO_PREFAB_TEXT, el.Q<Label>());
             SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(NO_PREFAB_SELECTED_IMAGE_PATH), el.Q<Image>());
             return;
@@ -173,7 +174,9 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             Debug.Log("END OF LIST | in: " + m_CurrentIndex + ", With: " + slotToListDictionary[m_CurrentIndex]);
             m_Palette.RemoveAt(slotToListDictionary[m_CurrentIndex]);
             slotToListDictionary.Remove(m_CurrentIndex);
-            m_ScrollView.RemoveAt(m_CurrentIndex);
+            SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(NO_PREFAB_SELECTED_IMAGE_PATH), 
+             el.Q<Image>());
+            SetPrefabLabel(NO_PREFAB_TEXT, el.Q<Label>()); 
             return; 
         }
         
@@ -193,10 +196,9 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
           
 //        Debug.Log("DO I HAVE KEY?" + slotToListDictionary.ContainsKey(m_ScrollView.childCount - 1));
         slotToListDictionary.Remove(m_ScrollView.childCount - 1);
-        m_ScrollView.RemoveAt(m_CurrentIndex);
-        
-        
-        m_Palette.TrimExcess();
+        {
+            m_ScrollView.RemoveAt(m_CurrentIndex);
+        }
 
         m_IsInContextMenu = false;
         m_CurrentIndex = -1;
