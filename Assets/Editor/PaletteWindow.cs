@@ -159,7 +159,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         Debug.Log("Count: " + slotToListDictionary.Count);
         Debug.Log("Chosen element: " + m_CurrentIndex);
         if (slotToListDictionary.Count == 1 && m_Palette.Count == 1 && m_ScrollView.childCount == 1)
-        { 
+        {
             Debug.Log("EMPTY LIST NOW");
             m_Palette.Clear();
             slotToListDictionary.Clear();
@@ -178,10 +178,10 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         }
         
         
-        for (int i = m_CurrentIndex; i < m_ScrollView.childCount - 1; i++)
+        for (int i = m_CurrentIndex; i <slotToListDictionary.Count - 1; i++)
         {
             Debug.Log("Replace " + i + "with " + (i + 1));
-            Debug.Log("i: " + m_Palette[i] + ", i + 1: " + m_Palette[i + 1]);
+            // Debug.Log("i: " + m_Palette[i] + ", i + 1: " + m_Palette[i + 1]);
             if(i == m_CurrentIndex)
             {
                 Debug.Log("PREFAB REMOVED!");
@@ -190,7 +190,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             
             slotToListDictionary[i] = slotToListDictionary[i + 1] - 1;
         }
-        
+          
 //        Debug.Log("DO I HAVE KEY?" + slotToListDictionary.ContainsKey(m_ScrollView.childCount - 1));
         slotToListDictionary.Remove(m_ScrollView.childCount - 1);
         m_ScrollView.RemoveAt(m_CurrentIndex);
