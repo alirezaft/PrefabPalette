@@ -55,6 +55,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private VisualElement m_CurrentElemetn;
 
     private GameObject m_GetPreviewForThis;
+    private static PaletteWindow m_Instance;
 
     private void OnEnable(){
         var uxmlFile = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(MAIN_VISUAL_ASSET_TREE_PATH);
@@ -73,7 +74,15 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     }
 
     private void OnGUI() {
-        // if(m_GetPreviewForThis != null){}
+        if(position.width > position.height){
+            rootVisualElement.style.flexDirection = FlexDirection.Row;
+            m_ScrollView.contentContainer.style.flexDirection = FlexDirection.Row;
+            m_ScrollView.contentViewport.style.flexDirection = FlexDirection.Row;
+        }else{
+            rootVisualElement.style.flexDirection = FlexDirection.Column;
+            m_ScrollView.contentViewport.style.flexDirection = FlexDirection.Column;
+            m_ScrollView.contentContainer.style.flexDirection = FlexDirection.Column;
+        }
     }
 
     public void AddItemsToMenu(GenericMenu menu){
@@ -83,8 +92,8 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     [MenuItem(PREFAB_PALETTE_MENU_PATH)]
     public static void OpenPrefabPalette(){
-        var window = EditorWindow.GetWindow<PaletteWindow>(false, "Prefab Palette", true);
-        window.Show();
+        m_Instance = EditorWindow.GetWindow<PaletteWindow>(false, "Prefab Palette", true);
+        m_Instance.Show();
     }
 
     private void OnScrollViewGeometryChange(GeometryChangedEvent evt){
@@ -429,4 +438,20 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
         return res;
     }
+
+
+    
 }
+
+class BidirectionalScrollView : ScrollView{
+    private Orientation m_CurrentOrientation;
+
+    public BidirectionalScrollView(Orientation o) : 
+    base(o == Orientation.Vertical ? ScrollViewMode.Vertical : ScrollViewMode.Horizontal){
+        m_CurrentOrientation = o;
+    }
+    
+
+}
+
+enum Orientation{Horizontal, Vertical}
