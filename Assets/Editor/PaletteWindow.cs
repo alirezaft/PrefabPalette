@@ -34,7 +34,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     #endregion
 
     #region numerical constants
-    private const float PREFAB_PREVIEW_IMAGE_SIZE = 112;
+    private const float PREFAB_PREVIEW_IMAGE_SIZE = 70;
     #endregion
 
     #region color values
