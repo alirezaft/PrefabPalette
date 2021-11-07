@@ -84,10 +84,12 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             m_ScrollView.contentContainer.style.flexDirection = FlexDirection.Column;
         }
     }
+    
 
     public void AddItemsToMenu(GenericMenu menu){
         menu.AddItem(new GUIContent("Save palette"), false, SavePalette);
         menu.AddItem(new GUIContent("Load palette"), false, LoadPalette);
+        menu.AddItem(new GUIContent("New palette"), false, NewPalette);
     }
 
     [MenuItem(PREFAB_PALETTE_MENU_PATH)]
@@ -235,6 +237,13 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
         var loadedPalette = AssetDatabase.LoadAssetAtPath<PaletteData>(path);
         PaintUIOnLoad(loadedPalette);
+    }
+
+    private void NewPalette(){
+        m_ScrollView.Clear();
+        m_Palette.Clear();
+        slotToListDictionary.Clear();
+        InstantiateNewPrefabSlot();
     }
 
     private void PaintUIOnLoad(PaletteData loadedPalette){
