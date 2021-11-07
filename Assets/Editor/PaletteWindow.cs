@@ -257,7 +257,14 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             Debug.Log(go.name);
             InstantiateNewPrefabSlot();
             var slotimg = m_ScrollView.Query<Image>("prefab-field").Last();
-            SetPrefabSelectorImage(GetAssetPreview(go), slotimg);
+            var preview = GetAssetPreview(go);
+            
+            if(preview != null){
+                SetPrefabSelectorImage(GetAssetPreview(go), slotimg);
+            }else{
+                SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(EMPTY_PREFAB_IMAGE_PATH), slotimg);
+            }
+
             var slotlabel = m_ScrollView.Query<Label>("prefab-name").Last();
             slotToListDictionary.Add(i, i);
             m_Palette.Add(go);
