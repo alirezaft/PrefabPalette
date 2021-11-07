@@ -217,8 +217,8 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     
     private void SavePalette(){
-        PaletteData data = new PaletteData();
-        data.Palette = m_Palette;
+        PaletteData data = ScriptableObject.CreateInstance<PaletteData>();
+        data.Palette = new List<GameObject>(m_Palette);
         var path = EditorUtility.SaveFilePanel("Save Prefab palette", "Assets", "", "asset");
         
         path = TurnFullPathToUnityPath(path);
@@ -247,14 +247,14 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     }
 
     private void PaintUIOnLoad(PaletteData loadedPalette){
+        Debug.Log(loadedPalette.name);
         m_ScrollView.Clear();
         m_Palette.Clear();
         slotToListDictionary.Clear();
-        
         int i = 0;
-        slotToListDictionary.Clear();
-        m_Palette.Clear();
+
         foreach(GameObject go in loadedPalette.Palette){
+            Debug.Log(go.name);
             InstantiateNewPrefabSlot();
             var slotimg = m_ScrollView.Query<Image>("prefab-field").Last();
             SetPrefabSelectorImage(GetAssetPreview(go), slotimg);
