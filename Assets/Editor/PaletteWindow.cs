@@ -413,8 +413,12 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     private void SetPrefabSelectorImage(Texture2D background, Image selector){
         selector.image = background;
-        selector.style.width = new StyleLength(PREFAB_PREVIEW_IMAGE_SIZE);
-        selector.style.height = new StyleLength(PREFAB_PREVIEW_IMAGE_SIZE);
+        selector.style.width = new StyleLength(new Length(PREFAB_PREVIEW_IMAGE_SIZE, LengthUnit.Percent));
+        Debug.Log(selector.parent.name + " " + selector.parent.style.width.value.value + " " + selector.parent.style.width.value.unit);
+        // float precent = (selector.parent.style.width.value.value * (selector.style.width.value.value * 0.01f)) / selector.parent.style.height.value.value;
+        
+        selector.style.height = new StyleLength(new Length(selector.style.width.value.value, LengthUnit.Percent));
+        
     }
 
     private void PingPrefabAsset(DropdownMenuAction action){
@@ -458,16 +462,3 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     
 }
-
-class BidirectionalScrollView : ScrollView{
-    private Orientation m_CurrentOrientation;
-
-    public BidirectionalScrollView(Orientation o) : 
-    base(o == Orientation.Vertical ? ScrollViewMode.Vertical : ScrollViewMode.Horizontal){
-        m_CurrentOrientation = o;
-    }
-    
-
-}
-
-enum Orientation{Horizontal, Vertical}
