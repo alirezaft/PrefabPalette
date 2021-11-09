@@ -94,30 +94,38 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         }
     }
 
-    private void ChangeImageSizeOnWindowSizeChange(GeometryChangedEvent evt){
+    private void ChangeImageSizeOnWindowSizeChange(GeometryChangedEvent evt){  
         var imgQuery = rootVisualElement.Query<Image>();
         imgQuery.ForEach((Image img) => {
             if(!m_IsHorizontal){
-                img.style.width = new StyleLength(new Length(PREFAB_PREVIEW_IMAGE_SIZE, LengthUnit.Percent));
-                Debug.Log(img.parent.contentRect.height);
-                float percent = ((img.parent.contentRect.width * (img.style.width.value.value * 0.01f)) / img.parent.contentRect.height) * 100;
-
-                img.style.height = new StyleLength(new Length(img.contentRect.width, LengthUnit.Pixel));
-                Debug.Log("HEIGHT: " + img.style.height + ", WIDTH: " + img.style.width);
+                EditorCoroutineUtility.StartCoroutine(SetHeight(img), this);
             }else{
-                img.style.height = new StyleLength(new Length(PREFAB_PREVIEW_IMAGE_SIZE, LengthUnit.Percent));
-                Debug.Log(img.parent.contentRect.height);
-                float percent = ((img.parent.contentRect.height * (img.style.height.value.value * 0.01f)) / img.parent.contentRect.width) * 100;
-
-                img.style.width = new StyleLength(new Length(img.contentRect.height, LengthUnit.Pixel));
+                EditorCoroutineUtility.StartCoroutine(SetWidth(img), this);
             }
         });
 
         if(m_ManualGeometryChange){
-            Debug.Log("MANUAL GEOMETRY"); 
             m_ManualGeometryChange = false;
             evt.Dispose();
         }
+    }
+
+    private IEnumerator SetHeight(Image img){
+        yield return new EditorWaitForSeconds(0.02f);
+        img.style.width = new StyleLength(new Length(PREFAB_PREVIEW_IMAGE_SIZE, LengthUnit.Percent));
+
+        float percent = ((img.parent.contentRect.width * (img.style.width.value.value * 0.01f)) / img.parent.contentRect.height) * 100;
+
+        img.style.height = new StyleLength(new Length(img.contentRect.width, LengthUnit.Pixel));
+    }
+
+    private IEnumerator SetWidth(Image img){
+        yield return new EditorWaitForSeconds(0.02f);
+        img.style.height = new StyleLength(new Length(PREFAB_PREVIEW_IMAGE_SIZE, LengthUnit.Percent));
+
+        float percent = ((img.parent.contentRect.height * (img.style.height.value.value * 0.01f)) / img.parent.contentRect.width) * 100;
+
+        img.style.width = new StyleLength(new Length(img.contentRect.height, LengthUnit.Pixel));
     }
     
 
@@ -194,7 +202,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         m_CurrentIndex = m_ScrollView.IndexOf(element.parent.parent);
         m_IsInContextMenu = true;
         
-        Debug.Log("CONTEXT #" + m_ScrollView.IndexOf(element.parent.parent));
         bool foundGo = slotToListDictionary.ContainsKey(m_CurrentIndex) && m_Palette[slotToListDictionary[m_CurrentIndex]] != null;
         
         evt.menu.AppendAction("Remove prefab", RemovePrefab, foundGo ? DropdownMenuAction.Status.Normal : 
@@ -205,13 +212,10 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     }
 
     private void RemovePrefab(DropdownMenuAction action){
-        Debug.Log("Count: " + slotToListDictionary.Count);
-        Debug.Log("Chosen element: " + m_CurrentIndex);
         var el = m_ScrollView.ElementAt(m_CurrentIndex);
 
         if (slotToListDictionary.Count == 1 && m_Palette.Count == 1 && m_ScrollView.childCount == 1)
         {
-            Debug.Log("EMPTY LIST NOW");
             m_Palette.Clear();
             slotToListDictionary.Clear();
             SetPrefabLabel(NO_PREFAB_TEXT, el.Q<Label>());
@@ -220,7 +224,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         }
         if (m_CurrentIndex == m_ScrollView.childCount - 1)
         {
-            Debug.Log("END OF LIST | in: " + m_CurrentIndex + ", With: " + slotToListDictionary[m_CurrentIndex]);
             m_Palette.RemoveAt(slotToListDictionary[m_CurrentIndex]);
             slotToListDictionary.Remove(m_CurrentIndex);
             SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(NO_PREFAB_SELECTED_IMAGE_PATH), 
@@ -232,18 +235,14 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         
         for (int i = m_CurrentIndex; i <slotToListDictionary.Count - 1; i++)
         {
-            Debug.Log("Replace " + i + "with " + (i + 1));
-            // Debug.Log("i: " + m_Palette[i] + ", i + 1: " + m_Palette[i + 1]);
             if(i == m_CurrentIndex)
             {
-                Debug.Log("PREFAB REMOVED!");
                 m_Palette.RemoveAt(slotToListDictionary[m_CurrentIndex]);
             }
             
             slotToListDictionary[i] = slotToListDictionary[i + 1] - 1;
         }
           
-//        Debug.Log("DO I HAVE KEY?" + slotToListDictionary.ContainsKey(m_ScrollView.childCount - 1));
         slotToListDictionary.Remove(m_ScrollView.childCount - 1);
         {
             m_ScrollView.RemoveAt(m_CurrentIndex);
@@ -285,14 +284,12 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     }
 
     private void PaintUIOnLoad(PaletteData loadedPalette){
-        Debug.Log(loadedPalette.name);
         m_ScrollView.Clear();
         m_Palette.Clear();
         slotToListDictionary.Clear();
         int i = 0;
 
         foreach(GameObject go in loadedPalette.Palette){
-            Debug.Log(go.name);
             InstantiateNewPrefabSlot();
             var slotimg = m_ScrollView.Query<Image>("prefab-field").Last();
             var preview = GetAssetPreview(go);
@@ -396,9 +393,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     }
 
-    private void OnPrefabDragExit(DragExitedEvent evt){
-//        Debug.Log("I AM OOOOOAAAA");
-    }
+    private void OnPrefabDragExit(DragExitedEvent evt){}
 
     private void OnPrefabSlotDragStart(PointerDownEvent evt){
         var element = evt.target as VisualElement;
@@ -411,12 +406,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         } 
         
         m_CurrentElemetn = element;
-
-        for (int i = 0; i < m_Palette.Count; i++)
-        {
-            Debug.Log("<i: " + i + ", name: " + m_Palette[i] + ">");
-        }
-
 
         if(!m_IsInstantiating && slotToListDictionary.ContainsKey(index) && evt.button != 1){ 
             
