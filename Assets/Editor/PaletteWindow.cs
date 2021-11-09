@@ -59,6 +59,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     private bool m_IsWindowSizeChanging;
     private bool m_ManualGeometryChange;
+    private bool m_IsHorizontal = false;
 
     private void OnEnable(){
         var uxmlFile = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(MAIN_VISUAL_ASSET_TREE_PATH);
@@ -84,10 +85,12 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             rootVisualElement.style.flexDirection = FlexDirection.Row;
             m_ScrollView.contentContainer.style.flexDirection = FlexDirection.Row;
             m_ScrollView.contentViewport.style.flexDirection = FlexDirection.Row;
+            m_IsHorizontal = true;
         }else{
             rootVisualElement.style.flexDirection = FlexDirection.Column;
             m_ScrollView.contentViewport.style.flexDirection = FlexDirection.Column;
             m_ScrollView.contentContainer.style.flexDirection = FlexDirection.Column;
+            m_IsHorizontal = false;
         }
     }
 
@@ -95,12 +98,20 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         m_IsWindowSizeChanging = true;
         var imgQuery = rootVisualElement.Query<Image>();
         imgQuery.ForEach((Image img) => {
-            img.style.width = new StyleLength(new Length(PREFAB_PREVIEW_IMAGE_SIZE, LengthUnit.Percent));
-            Debug.Log(img.parent.contentRect.height);
-            float percent = ((img.parent.contentRect.width * (img.style.width.value.value * 0.01f)) / img.parent.contentRect.height) * 100;
+            if(!m_IsHorizontal){
+                img.style.width = new StyleLength(new Length(PREFAB_PREVIEW_IMAGE_SIZE, LengthUnit.Percent));
+                Debug.Log(img.parent.contentRect.height);
+                float percent = ((img.parent.contentRect.width * (img.style.width.value.value * 0.01f)) / img.parent.contentRect.height) * 100;
 
-            img.style.height = new StyleLength(new Length(img.contentRect.width, LengthUnit.Pixel));
-            Debug.Log("HEIGHT: " + img.style.height + ", WIDTH: " + img.style.width);
+                img.style.height = new StyleLength(new Length(img.contentRect.width, LengthUnit.Pixel));
+                Debug.Log("HEIGHT: " + img.style.height + ", WIDTH: " + img.style.width);
+            }else{
+                img.style.height = new StyleLength(new Length(PREFAB_PREVIEW_IMAGE_SIZE, LengthUnit.Percent));
+                Debug.Log(img.parent.contentRect.height);
+                float percent = ((img.parent.contentRect.height * (img.style.height.value.value * 0.01f)) / img.parent.contentRect.width) * 100;
+
+                img.style.width = new StyleLength(new Length(img.contentRect.height, LengthUnit.Pixel));
+            }
         });
 
         m_IsWindowSizeChanging = false;
