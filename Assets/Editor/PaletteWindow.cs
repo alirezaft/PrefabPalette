@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
-// using Unity.EditorCoroutines.Editor;
+using Unity.EditorCoroutines.Editor;
  
 
 public class PaletteWindow : EditorWindow, IHasCustomMenu
@@ -57,6 +57,9 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private GameObject m_GetPreviewForThis;
     private static PaletteWindow m_Instance;
 
+    private bool m_IsWindowSizeChanging;
+    private bool m_ManualGeometryChange;
+
     private void OnEnable(){
         var uxmlFile = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(MAIN_VISUAL_ASSET_TREE_PATH);
         var root = this.rootVisualElement;
@@ -66,14 +69,17 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         root.Query<Button>(BUTTON_ADD_PREFAB).First().clicked += OnAddSlotButtonPressed;
         m_ScrollView = root.Query<ScrollView>(SCROLL_VIEW_PREFAB_CONTAINER).First();
         m_ScrollView.contentContainer.RegisterCallback<GeometryChangedEvent>(OnScrollViewGeometryChange);
+        rootVisualElement.RegisterCallback<GeometryChangedEvent>(ChangeImageSizeOnWindowSizeChange);
         InstantiateNewPrefabSlot();
         m_Palette = new List<GameObject>();
         slotToListDictionary = new Dictionary<int, int>();
         m_IsInstantiating = false;
+        m_ManualGeometryChange = false;
         m_GetPreviewForThis = null;
     }
 
     private void OnGUI() {
+        var el = rootVisualElement.Q<Image>();
         if(position.width > position.height){
             rootVisualElement.style.flexDirection = FlexDirection.Row;
             m_ScrollView.contentContainer.style.flexDirection = FlexDirection.Row;
@@ -82,6 +88,26 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             rootVisualElement.style.flexDirection = FlexDirection.Column;
             m_ScrollView.contentViewport.style.flexDirection = FlexDirection.Column;
             m_ScrollView.contentContainer.style.flexDirection = FlexDirection.Column;
+        }
+    }
+
+    private void ChangeImageSizeOnWindowSizeChange(GeometryChangedEvent evt){
+        m_IsWindowSizeChanging = true;
+        var imgQuery = rootVisualElement.Query<Image>();
+        imgQuery.ForEach((Image img) => {
+            img.style.width = new StyleLength(new Length(PREFAB_PREVIEW_IMAGE_SIZE, LengthUnit.Percent));
+            Debug.Log(img.parent.contentRect.height);
+            float percent = ((img.parent.contentRect.width * (img.style.width.value.value * 0.01f)) / img.parent.contentRect.height) * 100;
+
+            img.style.height = new StyleLength(new Length(img.contentRect.width, LengthUnit.Pixel));
+            Debug.Log("HEIGHT: " + img.style.height + ", WIDTH: " + img.style.width);
+        });
+
+        m_IsWindowSizeChanging = false;
+        if(m_ManualGeometryChange){
+            Debug.Log("MANUAL GEOMETRY"); 
+            m_ManualGeometryChange = false;
+            evt.Dispose();
         }
     }
     
@@ -100,7 +126,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     private void OnScrollViewGeometryChange(GeometryChangedEvent evt){
          
-        if(!m_ScrollView.verticalScroller.ClassListContains(VisualElement.disabledUssClassName))
+        if(!m_ScrollView.verticalScroller.ClassListContains(VisualElement.disabledUssClassName) && !m_IsWindowSizeChanging && !m_ManualGeometryChange)
             m_ScrollView.verticalScroller.value = m_ScrollView.verticalScroller.highValue; 
         
     }
@@ -414,11 +440,20 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private void SetPrefabSelectorImage(Texture2D background, Image selector){
         selector.image = background;
         selector.style.width = new StyleLength(new Length(PREFAB_PREVIEW_IMAGE_SIZE, LengthUnit.Percent));
-        Debug.Log(selector.parent.name + " " + selector.parent.style.width.value.value + " " + selector.parent.style.width.value.unit);
-        // float precent = (selector.parent.style.width.value.value * (selector.style.width.value.value * 0.01f)) / selector.parent.style.height.value.value;
+
+        float percent = ((selector.parent.contentRect.width * (selector.contentRect.width * 0.01f)) / selector.parent.contentRect.height) * 100;
+        selector.style.height = new StyleLength(new Length(selector.contentRect.width, LengthUnit.Pixel));
         
-        selector.style.height = new StyleLength(new Length(selector.style.width.value.value, LengthUnit.Percent));
+        EditorCoroutineUtility.StartCoroutine(CallGeometryChangedManually(), this);
         
+
+    }
+
+    private IEnumerator CallGeometryChangedManually(){
+        yield return new EditorWaitForSeconds(0.002f);
+        m_ManualGeometryChange = true;
+        var evt = GeometryChangedEvent.GetPooled(rootVisualElement.contentRect, rootVisualElement.contentRect);
+        ChangeImageSizeOnWindowSizeChange(evt);
     }
 
     private void PingPrefabAsset(DropdownMenuAction action){
