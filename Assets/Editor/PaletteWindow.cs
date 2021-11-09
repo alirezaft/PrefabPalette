@@ -57,9 +57,9 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private GameObject m_GetPreviewForThis;
     private static PaletteWindow m_Instance;
 
-    private bool m_IsWindowSizeChanging;
     private bool m_ManualGeometryChange;
     private bool m_IsHorizontal = false;
+    private bool m_AddingNewSlot = false;
 
     private void OnEnable(){
         var uxmlFile = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(MAIN_VISUAL_ASSET_TREE_PATH);
@@ -95,7 +95,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     }
 
     private void ChangeImageSizeOnWindowSizeChange(GeometryChangedEvent evt){
-        m_IsWindowSizeChanging = true;
         var imgQuery = rootVisualElement.Query<Image>();
         imgQuery.ForEach((Image img) => {
             if(!m_IsHorizontal){
@@ -114,7 +113,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             }
         });
 
-        m_IsWindowSizeChanging = false;
         if(m_ManualGeometryChange){
             Debug.Log("MANUAL GEOMETRY"); 
             m_ManualGeometryChange = false;
@@ -137,12 +135,15 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     private void OnScrollViewGeometryChange(GeometryChangedEvent evt){
          
-        if(!m_ScrollView.verticalScroller.ClassListContains(VisualElement.disabledUssClassName) && !m_IsWindowSizeChanging && !m_ManualGeometryChange)
+        if(!m_ScrollView.verticalScroller.ClassListContains(VisualElement.disabledUssClassName) && m_AddingNewSlot){
             m_ScrollView.verticalScroller.value = m_ScrollView.verticalScroller.highValue; 
+            m_AddingNewSlot = false;
+        }
         
     }
 
     private void InstantiateNewPrefabSlot(){
+        m_AddingNewSlot = true;
         var newSlot = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(PREFAB_SLOT_VISUAL_TREE_PATH); 
         m_ScrollView.Add(newSlot.Instantiate()); 
         var createdField = m_ScrollView.Query<Image>(IMAGE_PREFAB_FIELD).Last();
