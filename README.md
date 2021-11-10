@@ -6,11 +6,17 @@ In the Package Manager window, click on the plus button and choose "Add package 
 ## How to use
 You can open prefab palette in `Edit -> Prefab Palette`
 Drag the prefab you want from the Project window, to one of hte slots.
-//image
+
+![View of the window](PrefabPaletteGeneral.gif)
+
 You can add new slots, as many as you want with the button in the bottom.
-//image
 You can also remove and ping the prefabs you wnat by right-clicking on it.
-//image
+
+![Save, Load and clear buttons](CornerMenu.png)
+
 You can save, load and clear palette by using the menu on the upper right cornent of the window.
+
+![Remove and ping buttons](ContextMenu.png)
+
 ## Contribution
 If you found a bug, or think there's a feature that is nice to have, feel free to create an issue, or if you feel like it, fork this repo and submit a pull request.
