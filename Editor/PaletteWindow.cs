@@ -10,11 +10,11 @@ using Unity.EditorCoroutines.Editor;
 public class PaletteWindow : EditorWindow, IHasCustomMenu
 {
     #region paths
-    private const string MAIN_VISUAL_ASSET_TREE_PATH = "Assets/Editor/PaletteWindow.uxml";
-    private const string PREFAB_SLOT_VISUAL_TREE_PATH = "Assets/Editor/PrefabSlot.uxml";
+    private const string MAIN_VISUAL_ASSET_TREE_PATH = "Packages/com.alirezaft.prefabpalette/Editor/PaletteWindow.uxml";
+    private const string PREFAB_SLOT_VISUAL_TREE_PATH = "Packages/com.alirezaft.prefabpalette/Editor/PrefabSlot.uxml";
     private const string PREFAB_PALETTE_MENU_PATH = "Window/Prefab Palette";
-    private const string NO_PREFAB_SELECTED_IMAGE_PATH = "Assets/Editor/Textures/NoPrefabImg.jpg";
-    private const string EMPTY_PREFAB_IMAGE_PATH = "Assets/Editor/Textures/EmptyPrefab.png";
+    private const string NO_PREFAB_SELECTED_IMAGE_PATH = "Packages/com.alirezaft.prefabpalette/Editor/Textures/NoPrefabImg.jpg";
+    private const string EMPTY_PREFAB_IMAGE_PATH = "Packages/com.alirezaft.prefabpalette/Editor/Textures/EmptyPrefab.png";
     #endregion
 
     #region uxml element names
