@@ -20,3 +20,7 @@ You can save, load and clear palette by using the menu on the upper right cornen
 
 ## Contribution
 If you found a bug, or think there's a feature that is nice to have, feel free to create an issue, or if you feel like it, fork this repo and submit a pull request.
+
+—
+Images for icons are made by [Freepik](https://www.freepik.com).
+
