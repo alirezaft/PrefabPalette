@@ -95,7 +95,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     }
 
     private void ChangeImageSizeOnWindowSizeChange(GeometryChangedEvent evt){  
-        Debug.Log("PIN! PIN! " + m_IsHorizontal);
         var imgQuery = rootVisualElement.Query<Image>();
         imgQuery.ForEach((Image img) => {
             if(position.width <= position.height){
@@ -115,7 +114,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         
         yield return new EditorWaitForSeconds(0.02f);
         img.style.width = new StyleLength(new Length(PREFAB_PREVIEW_IMAGE_SIZE, LengthUnit.Percent));
-        // Debug.Log(img.style.width + ", " + img.style.height);
         float percent = ((img.parent.contentRect.width * (img.style.width.value.value * 0.01f)) / img.parent.contentRect.height) * 100;
 
         img.style.height = new StyleLength(new Length(img.contentRect.width, LengthUnit.Pixel));
