@@ -47,6 +47,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private bool m_IsInContextMenu;
     private int m_NumberOfItems;
     private int m_CurrentIndex;
+    private bool m_IsClicked;
     
     private List<GameObject> m_Palette;
     private Dictionary<int, int> slotToListDictionary;
@@ -183,6 +184,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         element.RegisterCallback<MouseLeaveEvent>(OnPrefabLeaveSlotBounds);
         element.RegisterCallback<DragUpdatedEvent>(OnDraggingPrefabUpdated);
         element.RegisterCallback<PointerDownEvent>(OnPrefabSlotDragStart);
+        element.RegisterCallback<PointerMoveEvent>(PointerMove);
         element.RegisterCallback<PointerUpEvent>(OnPrefabSlotDragFinished);
         element.RegisterCallback<DragLeaveEvent>(OnPrefabSlotDragLEave);
         element.AddManipulator(new ContextualMenuManipulator(OnRightClickOnPrefabPreview));
@@ -408,22 +410,28 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         m_CurrentElemetn = element;
 
         if(!m_IsInstantiating && slotToListDictionary.ContainsKey(index) && evt.button != 1){ 
-            
+            m_CurrentIndex = index;
             ChangeBorderColor(element, Color.blue);
             m_IsInstantiating = true;
+            m_IsClicked = true;
+        }
+    }
+
+    private void PointerMove(PointerMoveEvent evt){
+        if(m_IsClicked){
             DragAndDrop.PrepareStartDrag();
             DragAndDrop.StartDrag("Instantiate");
             DragAndDrop.visualMode = DragAndDropVisualMode.Link;
-            DragAndDrop.objectReferences = new Object[]{m_Palette[slotToListDictionary[index]]};
-            
+            DragAndDrop.objectReferences = new Object[]{m_Palette[slotToListDictionary[m_CurrentIndex]]};
+            m_IsClicked = false;
         }
     }
 
     private void OnPrefabSlotDragFinished(PointerUpEvent evt){
-
         var element = evt.target as VisualElement;
         var parent = element.parent.parent;
         var index = m_ScrollView.IndexOf(element.parent.parent);
+        m_IsClicked = false;
 
         DragAndDrop.visualMode = DragAndDropVisualMode.None;
         m_IsInstantiating = false;
