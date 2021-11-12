@@ -12,11 +12,11 @@ Drag the prefab you want from the Project window to one of the slots.
 ![View of the window](PrefabPaletteGeneral.gif)
 
 You can add new slots, as many as necessary using the button in the bottom.</br>
-You can also remove or ping the prefab you want by right-clicking on it.
+You can save, load and clear palettes by using the menu on the upper right corner of the window.
 
 ![Save, Load and clear buttons](CornerMenu.png)
 
-You can save, load and clear palettes by using the menu on the upper right corner of the window.
+You can also remove or ping the prefab you want by right-clicking on it.
 
 ![Remove and ping buttons](ContextMenu.png)
 
