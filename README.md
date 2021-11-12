@@ -2,7 +2,9 @@
 Prefab Palette allows you to put your frequently used prefabs somewhere easy to reach so you don't need to move form a folder to another to find a prefab and put it in the scene, so you can save your time and energy for more important things.</br>
 You can also save a palette to use it later in your project.
 ## Installation
-In the Package Manager window, click on the plus button and choose "Add package from git URL". Then, paste the url of this repo in the text box.
+In the Package Manager window, click on the plus button and choose "Add package from git URL". Then, paste the url of this repo in the text box.</br>
+**Compatibility: This tool is tested with Unity 2021.1.2f1 and 2020.2.0f1. The minimum supported version is set to 2020.2**
+
 ## How to use
 You can open prefab palette from `Edit -> Prefab Palette`
 Drag the prefab you want from the Project window to one of the slots.
