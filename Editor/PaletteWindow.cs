@@ -162,11 +162,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         menu.AddItem(new GUIContent("New palette"), false, NewPalette);
     }
 
-    // [MenuItem("Edit/RESET")]
-    // public static void Reset(){
-    //     EditorPrefs.DeleteAll();
-    // }
-
     [MenuItem(PREFAB_PALETTE_MENU_PATH)]
     public static void OpenPrefabPalette(){
         var win = EditorWindow.GetWindow<PaletteWindow>(false, "Prefab Palette", true);
