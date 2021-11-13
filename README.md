@@ -6,17 +6,17 @@ In the Package Manager window, click on the plus button and choose "Add package 
 **Compatibility: This tool is tested with Unity 2021.1.2f1 and 2020.2.0f1. The minimum supported version is set to 2020.2**
 
 ## How to use
-You can open prefab palette from `Edit -> Prefab Palette`
+You can open prefab palette from `Window -> Prefab Palette`
 Drag the prefab you want from the Project window to one of the slots.
 
 ![View of the window](PrefabPaletteGeneral.gif)
 
 You can add new slots, as many as necessary using the button in the bottom.</br>
-You can also remove or ping the prefab you want by right-clicking on it.
+You can save, load and clear palettes by using the menu on the upper right corner of the window.
 
 ![Save, Load and clear buttons](CornerMenu.png)
 
-You can save, load and clear palettes by using the menu on the upper right corner of the window.
+You can also remove or ping the prefab you want by right-clicking on it.
 
 ![Remove and ping buttons](ContextMenu.png)
 
