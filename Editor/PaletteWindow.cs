@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using Unity.EditorCoroutines.Editor;
- 
+  
 
 public class PaletteWindow : EditorWindow, IHasCustomMenu
 {
@@ -31,8 +31,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     
     #region texts
     private const string NO_PREFAB_TEXT = "No  prefab selected";
-    private const string PALETTE_GAMEOBJECT_NAME_EDITOR_PREFS = "palgo";
-    private const string PALETTE_SIZE_EDITOR_PREFS = "PaletteSize";
     #endregion
 
     #region numerical constants
@@ -53,7 +51,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     
     private List<GameObject> m_Palette;
     private Dictionary<int, int> slotToListDictionary;
-
+    
     private ScrollView m_ScrollView;
     private VisualElement m_CurrentElemetn;
 
@@ -68,7 +66,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         var root = this.rootVisualElement;
         uxmlFile.CloneTree(root);
         m_NumberOfItems = 1;
-        
         root.Query<Button>(BUTTON_ADD_PREFAB).First().clicked += OnAddSlotButtonPressed;
         m_ScrollView = root.Query<ScrollView>(SCROLL_VIEW_PREFAB_CONTAINER).First();
         m_ScrollView.contentContainer.RegisterCallback<GeometryChangedEvent>(OnScrollViewGeometryChange);
@@ -79,30 +76,32 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         m_IsInstantiating = false;
         m_ManualGeometryChange = false;
         m_GetPreviewForThis = null;
-        int previousPaletteSize = 0;
-        if(EditorPrefs.HasKey(PALETTE_SIZE_EDITOR_PREFS)){
-            previousPaletteSize = EditorPrefs.GetInt(PALETTE_SIZE_EDITOR_PREFS);
-        }else{
-            EditorPrefs.SetInt(PALETTE_SIZE_EDITOR_PREFS, 0);
-        }
-
-        if(previousPaletteSize != 0){
-            ReloadPaletteAfterPlayMode(previousPaletteSize);
+        if (PlaymodePaletteKeeper.instance.m_TempPalette.Count > 0)
+        {
+            ReloadPaletteAfterPlayMode(PlaymodePaletteKeeper.instance.m_TempPalette);
         }
     }
 
-    private void ReloadPaletteAfterPlayMode(int size){
-        for(int i = 0; i < size; i++){
-            var elementName = PALETTE_GAMEOBJECT_NAME_EDITOR_PREFS + i;
-            var guid = EditorPrefs.GetString(elementName);
-            var go = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
-            m_Palette.Add(go);
-            slotToListDictionary.Add(i, i);
-            SetPrefabSelectorImage(GetAssetPreview(go), rootVisualElement.Query<Image>().Last());
-            SetPrefabLabel(go.name, rootVisualElement.Query<Label>().Last());
-            if(i != size - 1){
+    private void ReloadPaletteAfterPlayMode(List<GameObject> pal)
+    {
+        m_ScrollView.Clear();
+        Debug.Log(pal.Count);
+        InstantiateNewPrefabSlot();
+        int i = 0;
+        foreach (GameObject gameObject in pal)
+        {
+            var img = rootVisualElement.Query<Image>().Last();
+            SetPrefabSelectorImage(GetAssetPreview(gameObject), img);
+            var lbl = rootVisualElement.Query<Label>().Last();
+            SetPrefabLabel(gameObject.name, lbl);
+            m_Palette.Add(gameObject);
+            slotToListDictionary.Add(m_ScrollView.childCount - 1, m_Palette.Count - 1);
+            if (i != pal.Count - 1)
+            {
                 InstantiateNewPrefabSlot();
             }
+
+            i++;
         }
     }
 
@@ -244,10 +243,9 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
         if (slotToListDictionary.Count == 1 && m_Palette.Count == 1 && m_ScrollView.childCount == 1)
         {
-            for(int i = 0; i < EditorPrefs.GetInt(PALETTE_SIZE_EDITOR_PREFS); i++){
-                EditorPrefs.DeleteKey(PALETTE_GAMEOBJECT_NAME_EDITOR_PREFS + i);
-            }
-            EditorPrefs.SetInt(PALETTE_SIZE_EDITOR_PREFS, 0);
+            
+            PlaymodePaletteKeeper.instance.m_TempPalette.Clear();
+            
             m_Palette.Clear();
             slotToListDictionary.Clear();
             SetPrefabLabel(NO_PREFAB_TEXT, el.Q<Label>());
@@ -256,8 +254,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         }
         if (m_CurrentIndex == m_ScrollView.childCount - 1)
         {
-            EditorPrefs.DeleteKey(PALETTE_GAMEOBJECT_NAME_EDITOR_PREFS + EditorPrefs.GetInt(PALETTE_SIZE_EDITOR_PREFS));
-            EditorPrefs.SetInt(PALETTE_SIZE_EDITOR_PREFS, EditorPrefs.GetInt(PALETTE_SIZE_EDITOR_PREFS) - 1);
+            PlaymodePaletteKeeper.instance.m_TempPalette.RemoveAt(PlaymodePaletteKeeper.instance.m_TempPalette.Count - 1);
             m_Palette.RemoveAt(slotToListDictionary[m_CurrentIndex]);
             slotToListDictionary.Remove(m_CurrentIndex);
             SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(NO_PREFAB_SELECTED_IMAGE_PATH), 
@@ -275,11 +272,9 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             }
             
             slotToListDictionary[i] = slotToListDictionary[i + 1] - 1;
-            EditorPrefs.SetString(PALETTE_GAMEOBJECT_NAME_EDITOR_PREFS + i,
-             EditorPrefs.GetString(PALETTE_GAMEOBJECT_NAME_EDITOR_PREFS + (i + 1)));
+            PlaymodePaletteKeeper.instance.m_TempPalette[i] = PlaymodePaletteKeeper.instance.m_TempPalette[i + 1];
         }
-        EditorPrefs.DeleteKey(PALETTE_GAMEOBJECT_NAME_EDITOR_PREFS + (EditorPrefs.GetInt(PALETTE_SIZE_EDITOR_PREFS) - 1));
-        EditorPrefs.SetInt(PALETTE_SIZE_EDITOR_PREFS, m_Palette.Count);
+        PlaymodePaletteKeeper.instance.m_TempPalette.RemoveAt(PlaymodePaletteKeeper.instance.m_TempPalette.Count - 1);
         slotToListDictionary.Remove(m_ScrollView.childCount - 1);
         {
             m_ScrollView.RemoveAt(m_CurrentIndex);
@@ -304,6 +299,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         string path = EditorUtility.OpenFilePanel("Choose palette", "Assets", "asset");
         path = TurnFullPathToUnityPath(path);
         
+        
         if(!AssetDatabase.GetMainAssetTypeAtPath(path).Equals(typeof(PaletteData))){
             Debug.LogError("The chosen asset is not a Palette data. Please choose another asset.");
             return;
@@ -314,7 +310,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     }
 
     private void NewPalette(){
-        EditorPrefs.SetInt(PALETTE_SIZE_EDITOR_PREFS, 0);
+        PlaymodePaletteKeeper.instance.m_TempPalette = new List<GameObject>();
         m_ScrollView.Clear();
         m_Palette.Clear();
         slotToListDictionary.Clear();
@@ -322,7 +318,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     }
 
     private void PaintUIOnLoad(PaletteData loadedPalette){
-        EditorPrefs.SetInt(PALETTE_SIZE_EDITOR_PREFS, 0);
+        PlaymodePaletteKeeper.instance.m_TempPalette = new List<GameObject>(loadedPalette.Palette);
         m_ScrollView.Clear();
         m_Palette.Clear();
         slotToListDictionary.Clear();
@@ -343,11 +339,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             slotToListDictionary.Add(i, i);
             m_Palette.Add(go);
             SetPrefabLabel(go.name, slotlabel);
-            string guid;
-            long fileid;
-            AssetDatabase.TryGetGUIDAndLocalFileIdentifier(go, out guid, out fileid);
-            EditorPrefs.SetString(PALETTE_GAMEOBJECT_NAME_EDITOR_PREFS + "1", guid);
-            EditorPrefs.SetInt(PALETTE_SIZE_EDITOR_PREFS, m_Palette.Count);
             i++;
         }
     }
@@ -363,12 +354,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     private void OnPrefabDroppedIntoSlot(DragPerformEvent evt)
     {
-        if(EditorPrefs.HasKey(PALETTE_SIZE_EDITOR_PREFS)){
-            EditorPrefs.SetInt(PALETTE_SIZE_EDITOR_PREFS, EditorPrefs.GetInt(PALETTE_SIZE_EDITOR_PREFS) + 1);
-        }else{
-
-            EditorPrefs.SetInt(PALETTE_SIZE_EDITOR_PREFS, 1);
-        }
 
         var element = evt.target as VisualElement;
         var index = m_ScrollView.IndexOf(element.parent.parent);
@@ -380,19 +365,13 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
                 {
                     m_Palette.Add(prefabs[0] as GameObject);
                     slotToListDictionary.Add(index, m_Palette.Count - 1);
-                    string guid;
-                    long fileid;
-                    AssetDatabase.TryGetGUIDAndLocalFileIdentifier(prefabs[0], out guid, out fileid);
-                    EditorPrefs.SetString(PALETTE_GAMEOBJECT_NAME_EDITOR_PREFS + (m_Palette.Count - 1), guid);
+                    PlaymodePaletteKeeper.instance.m_TempPalette.Add(prefabs[0] as GameObject);
 //                    m_Palette.Add(prefabs[0] as GameObject);
                 }
                 else
                 {
-                    string guid;
-                    long fileid;
-                    AssetDatabase.TryGetGUIDAndLocalFileIdentifier(prefabs[0], out guid, out fileid);
-                    EditorPrefs.SetString(PALETTE_GAMEOBJECT_NAME_EDITOR_PREFS + slotToListDictionary[index], guid);
                     m_Palette.Insert(slotToListDictionary[index], prefabs[0] as GameObject); 
+                    PlaymodePaletteKeeper.instance.m_TempPalette.Insert(slotToListDictionary[index], prefabs[0] as GameObject); 
                 }
                 
                 var preview = GetAssetPreview(prefabs[0] as GameObject);
