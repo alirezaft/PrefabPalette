@@ -23,9 +23,6 @@ You can also remove or ping the prefab you want by right-clicking on it.
 ## Contribution
 If you found a bug, or think there's a feature that is nice to have, feel free to create an issue, or fork this repo, apply your changes and submit a pull request.
 
-**Known issues:</br>**
--Losing palette after entering playmode.
-
 ---
 Images for icons are made by [Freepik](https://www.freepik.com).
 
