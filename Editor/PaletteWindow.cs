@@ -85,7 +85,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private void ReloadPaletteAfterPlayMode(List<GameObject> pal)
     {
         m_ScrollView.Clear();
-        Debug.Log(pal.Count);
         InstantiateNewPrefabSlot();
         int i = 0;
         foreach (GameObject gameObject in pal)
