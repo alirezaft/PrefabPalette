@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.UIElements;
@@ -51,6 +52,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     
     private List<GameObject> m_Palette;
     private Dictionary<int, int> slotToListDictionary;
+    private static PaletteWindow m_instance;
     
     private ScrollView m_ScrollView;
     private VisualElement m_CurrentElemetn;
@@ -79,6 +81,27 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         if (PlaymodePaletteKeeper.instance.m_TempPalette.Count > 0)
         {
             ReloadPaletteAfterPlayMode(PlaymodePaletteKeeper.instance.m_TempPalette);
+        }
+
+        m_instance = this;
+    }
+
+    public static PaletteWindow GetInstance()
+    {
+        return m_instance;
+    }
+
+    public void ForceRemovePrefab(GameObject[] gos)
+    {
+        foreach (GameObject go in gos)
+        {
+            var paletteIndex = m_Palette.IndexOf(go);
+            var inverseDict = slotToListDictionary.ToDictionary(x => x.Value, x => x.Key);
+            var uiIndex = inverseDict[paletteIndex];
+            m_ScrollView.RemoveAt(uiIndex);
+            slotToListDictionary.Remove(uiIndex);
+            m_Palette.RemoveAt(paletteIndex);
+            Debug.LogWarning("Prefab " + go.name + " was removed from palette due to deletion. Please update your saved palette to apply changes.");
         }
     }
 
