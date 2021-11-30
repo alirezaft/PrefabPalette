@@ -51,6 +51,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private bool m_IsClicked;
     
     private List<GameObject> m_Palette;
+    
     private Dictionary<int, int> slotToListDictionary;
     private static PaletteWindow m_instance;
     
@@ -64,6 +65,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     
 
     private void OnEnable(){
+        Debug.Log("Loading palette");
         var uxmlFile = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(MAIN_VISUAL_ASSET_TREE_PATH);
         var root = this.rootVisualElement;
         uxmlFile.CloneTree(root);
@@ -91,17 +93,19 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         return m_instance;
     }
 
-    public void ForceRemovePrefab(GameObject[] gos)
+    public void ForceRemovePrefab(string[] gos)
     {
-        foreach (GameObject go in gos)
+        foreach (string go in gos)
         {
-            var paletteIndex = m_Palette.IndexOf(go);
+//            Debug.Log(go.name);
+            var paletteIndex = m_Palette.FindIndex(x => x.name.Equals(go));
             var inverseDict = slotToListDictionary.ToDictionary(x => x.Value, x => x.Key);
             var uiIndex = inverseDict[paletteIndex];
             m_ScrollView.RemoveAt(uiIndex);
             slotToListDictionary.Remove(uiIndex);
             m_Palette.RemoveAt(paletteIndex);
-            Debug.LogWarning("Prefab " + go.name + " was removed from palette due to deletion. Please update your saved palette to apply changes.");
+            Debug.LogWarning("Prefab " + go + " was removed from palette due to deletion. Please update your saved palette to apply changes.");
+//            AssetDeleteWatcher.IsAssetDeleted = false;
         }
     }
 
@@ -128,18 +132,40 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     }
 
     private void OnGUI() {
-        var el = rootVisualElement.Q<Image>();
-        if(position.width > position.height){
-            rootVisualElement.style.flexDirection = FlexDirection.Row;
-            m_ScrollView.contentContainer.style.flexDirection = FlexDirection.Row;
-            m_ScrollView.contentViewport.style.flexDirection = FlexDirection.Row;
-            m_IsHorizontal = true;
-        }else{
-            rootVisualElement.style.flexDirection = FlexDirection.Column;
-            m_ScrollView.contentViewport.style.flexDirection = FlexDirection.Column;
-            m_ScrollView.contentContainer.style.flexDirection = FlexDirection.Column;
-            m_IsHorizontal = false;
+        if (AssetDeleteWatcher.IsAssetDeleted)
+        {
+            Debug.Log("Deleted asset detected!");
+            var names = AssetDeleteWatcher.GetDeletedAssetNames();
+
+            foreach (string name in names)
+            {
+                var listIndex = m_Palette.FindIndex(x => x.name.Equals(name));
+                var listToSlotDictionary = slotToListDictionary.ToDictionary(x => x.Value, x => x.Key);
+                m_Palette.RemoveAt(listIndex);
+                slotToListDictionary.Remove(listToSlotDictionary[listIndex]);
+                m_ScrollView.RemoveAt(listToSlotDictionary[listIndex]);
+                Debug.LogWarning("Prefab " + name + "was removed due to modification. Please save your palette " +
+                                 "to apply the changes or add your modified prefab again.");
+            }
+            
+            AssetDeleteWatcher.ResetPostprocessor();
         }
+        else
+        {
+            if(position.width > position.height){
+                rootVisualElement.style.flexDirection = FlexDirection.Row;
+                m_ScrollView.contentContainer.style.flexDirection = FlexDirection.Row;
+                m_ScrollView.contentViewport.style.flexDirection = FlexDirection.Row;
+                m_IsHorizontal = true;
+            }else{
+                rootVisualElement.style.flexDirection = FlexDirection.Column;
+                m_ScrollView.contentViewport.style.flexDirection = FlexDirection.Column;
+                m_ScrollView.contentContainer.style.flexDirection = FlexDirection.Column;
+                m_IsHorizontal = false;
+            }
+        }
+        
+        
     }
 
     private void ChangeImageSizeOnWindowSizeChange(GeometryChangedEvent evt){  
@@ -505,6 +531,11 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     }
 
     private void SetPrefabSelectorImage(Texture2D background, Image selector){
+        if (background == null)
+        {
+            Debug.LogError("NO TEXTURE DETECTED!");
+            return;
+        }
         selector.image = background;
         selector.style.width = new StyleLength(new Length(PREFAB_PREVIEW_IMAGE_SIZE, LengthUnit.Percent));
 
@@ -547,6 +578,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     }
 
     private Texture2D GetAssetPreview(GameObject obj){
+        Debug.Log("Getting asset preview");
         if(obj.GetComponent<Renderer>() == null && obj.GetComponentInChildren<Renderer>() == null){
             return null;
         }
