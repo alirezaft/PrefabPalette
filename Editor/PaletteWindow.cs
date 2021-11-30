@@ -23,6 +23,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private const string IMAGE_PREFAB_FIELD = "prefab-field";
     private const string LABEL_PREFAB_NAME = "prefab-name";
     private const string PREFAB_SLOT_CONTAINER_NAME = "prefab-container-slot";
+    private const string TEXT_FIELD_PREFAB_SEARCH_BAR = "prefab-search-field";
     #endregion
 
     #region uxml element classes
@@ -54,6 +55,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     
     private ScrollView m_ScrollView;
     private VisualElement m_CurrentElemetn;
+    private ToolbarSearchField m_PrefabSearchBar;
 
     private GameObject m_GetPreviewForThis;
     private bool m_ManualGeometryChange;
@@ -66,16 +68,24 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         var root = this.rootVisualElement;
         uxmlFile.CloneTree(root);
         m_NumberOfItems = 1;
+        
         root.Query<Button>(BUTTON_ADD_PREFAB).First().clicked += OnAddSlotButtonPressed;
+        m_PrefabSearchBar = root.Q<ToolbarSearchField>(TEXT_FIELD_PREFAB_SEARCH_BAR);
         m_ScrollView = root.Query<ScrollView>(SCROLL_VIEW_PREFAB_CONTAINER).First();
+        
         m_ScrollView.contentContainer.RegisterCallback<GeometryChangedEvent>(OnScrollViewGeometryChange);
+        
+        m_PrefabSearchBar.RegisterCallback<ChangeEvent<string>>(OnSearchBarValueChanged);
         rootVisualElement.RegisterCallback<GeometryChangedEvent>(ChangeImageSizeOnWindowSizeChange);
+        
         InstantiateNewPrefabSlot();
+        
         m_Palette = new List<GameObject>();
         slotToListDictionary = new Dictionary<int, int>();
         m_IsInstantiating = false;
         m_ManualGeometryChange = false;
         m_GetPreviewForThis = null;
+        
         if (PlaymodePaletteKeeper.instance.m_TempPalette.Count > 0)
         {
             ReloadPaletteAfterPlayMode(PlaymodePaletteKeeper.instance.m_TempPalette);
@@ -235,6 +245,11 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
         evt.menu.AppendAction("Ping", PingPrefabAsset, foundGo ? DropdownMenuAction.Status.Normal :
          DropdownMenuAction.Status.Disabled);
+    }
+
+    private void OnSearchBarValueChanged(ChangeEvent<string> evt)
+    {
+        Debug.Log("NEW QUERY: " + evt.newValue);
     }
 
     private void RemovePrefab(DropdownMenuAction action){

@@ -5,6 +5,7 @@
     xmlns:editor="UnityEditor.UIElements"
     xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
 >
+    <editor:ToolbarSearchField name="prefab-search-field" style="width: 90%;"/>
     <engine:ScrollView name="prefab-container" style="flex-grow: 1; "/>
     <engine:Button name="add-prefab-button" text="Add slot" style="margin-top: 7px; align-items: flex-end;"/>
 </engine:UXML>
