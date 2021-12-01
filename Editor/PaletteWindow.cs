@@ -276,11 +276,11 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     private void OnSearchBarValueChanged(ChangeEvent<string> evt)
     {
+        m_SearchResult.Clear();
         Debug.Log("\"" + evt.newValue + "\"");
         if (evt.newValue.Equals(""))
         {
             m_IsSearching = false;
-            m_SearchResult.Clear();
             ReloadPaletteForSearch(m_Palette);
             return;
         }
@@ -288,7 +288,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         m_IsSearching = true;
         foreach (GameObject gameObject in m_Palette)
         {
-            if (gameObject.name.Contains(evt.newValue))
+            if (gameObject.name.ToLower().Contains(evt.newValue.ToLower()))
             {
                 m_SearchResult.Add(gameObject);
             }
@@ -515,11 +515,18 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     }
 
     private void PointerMove(PointerMoveEvent evt){
-        if(m_IsClicked){
+        if(m_IsClicked && !m_IsSearching){
             DragAndDrop.PrepareStartDrag();
             DragAndDrop.StartDrag("Instantiate");
             DragAndDrop.visualMode = DragAndDropVisualMode.Link;
             DragAndDrop.objectReferences = new Object[]{m_Palette[slotToListDictionary[m_CurrentIndex]]};
+            m_IsClicked = false;
+        }else if (m_IsClicked && m_IsSearching)
+        {
+            DragAndDrop.PrepareStartDrag();
+            DragAndDrop.StartDrag("Instantiate");
+            DragAndDrop.visualMode = DragAndDropVisualMode.Link;
+            DragAndDrop.objectReferences = new Object[]{m_SearchResult[m_CurrentIndex]};
             m_IsClicked = false;
         }
     }
