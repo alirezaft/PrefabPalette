@@ -117,12 +117,12 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private void OnGUI() {
         var el = rootVisualElement.Q<Image>();
         if(position.width > position.height){
-            rootVisualElement.style.flexDirection = FlexDirection.Row;
+            rootVisualElement.Q<VisualElement>().Query<VisualElement>("responsive-layout").First().style.flexDirection = FlexDirection.Row;
             m_ScrollView.contentContainer.style.flexDirection = FlexDirection.Row;
             m_ScrollView.contentViewport.style.flexDirection = FlexDirection.Row;
             m_IsHorizontal = true;
         }else{
-            rootVisualElement.style.flexDirection = FlexDirection.Column;
+            rootVisualElement.Q<VisualElement>().Query<VisualElement>("responsive-layout").First().style.flexDirection = FlexDirection.Column; 
             m_ScrollView.contentViewport.style.flexDirection = FlexDirection.Column;
             m_ScrollView.contentContainer.style.flexDirection = FlexDirection.Column;
             m_IsHorizontal = false;
