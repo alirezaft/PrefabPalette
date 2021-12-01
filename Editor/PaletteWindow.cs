@@ -52,6 +52,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     
     private List<GameObject> m_Palette;
     private Dictionary<int, int> slotToListDictionary;
+    private List<GameObject> m_SearchResult;
     
     private ScrollView m_ScrollView;
     private VisualElement m_CurrentElemetn;
@@ -61,6 +62,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private bool m_ManualGeometryChange;
     private bool m_IsHorizontal = false;
     private bool m_AddingNewSlot = false;
+    private bool m_IsSearching;
     
 
     private void OnEnable(){
@@ -84,12 +86,15 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         slotToListDictionary = new Dictionary<int, int>();
         m_IsInstantiating = false;
         m_ManualGeometryChange = false;
+        m_IsSearching = false;
         m_GetPreviewForThis = null;
         
         if (PlaymodePaletteKeeper.instance.m_TempPalette.Count > 0)
         {
             ReloadPaletteAfterPlayMode(PlaymodePaletteKeeper.instance.m_TempPalette);
         }
+
+        m_SearchResult = new List<GameObject>();
     }
 
     private void ReloadPaletteAfterPlayMode(List<GameObject> pal)
@@ -105,6 +110,28 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             SetPrefabLabel(gameObject.name, lbl);
             m_Palette.Add(gameObject);
             slotToListDictionary.Add(m_ScrollView.childCount - 1, m_Palette.Count - 1);
+            if (i != pal.Count - 1)
+            {
+                InstantiateNewPrefabSlot();
+            }
+
+            i++;
+        }
+    }
+
+    private void ReloadPaletteForSearch(List<GameObject> pal)
+    {
+        m_ScrollView.Clear();
+        InstantiateNewPrefabSlot();
+        int i = 0;
+        foreach (GameObject gameObject in pal)
+        {
+            Debug.Log(gameObject.name);
+            var img = rootVisualElement.Query<Image>().Last();
+            SetPrefabSelectorImage(GetAssetPreview(gameObject), img);
+            var lbl = rootVisualElement.Query<Label>().Last();
+            SetPrefabLabel(gameObject.name, lbl);
+//            m_Palette.Add(gameObject);
             if (i != pal.Count - 1)
             {
                 InstantiateNewPrefabSlot();
@@ -249,7 +276,27 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     private void OnSearchBarValueChanged(ChangeEvent<string> evt)
     {
-        Debug.Log("NEW QUERY: " + evt.newValue);
+        Debug.Log("\"" + evt.newValue + "\"");
+        if (evt.newValue.Equals(""))
+        {
+            m_IsSearching = false;
+            m_SearchResult.Clear();
+            ReloadPaletteForSearch(m_Palette);
+            return;
+        }
+
+        m_IsSearching = true;
+        foreach (GameObject gameObject in m_Palette)
+        {
+            if (gameObject.name.Contains(evt.newValue))
+            {
+                m_SearchResult.Add(gameObject);
+            }
+        }
+
+        ReloadPaletteForSearch(m_SearchResult);
+
+
     }
 
     private void RemovePrefab(DropdownMenuAction action){
