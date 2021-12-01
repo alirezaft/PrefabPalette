@@ -569,9 +569,16 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         ChangeImageSizeOnWindowSizeChange(evt);
     }
 
-    private void PingPrefabAsset(DropdownMenuAction action){
+    private void PingPrefabAsset(DropdownMenuAction action)
+    {
         int index = slotToListDictionary[m_CurrentIndex];
-        EditorGUIUtility.PingObject(m_Palette[index]);
+
+        if (m_IsSearching)
+        {
+            EditorGUIUtility.PingObject(m_SearchResult[m_CurrentIndex]);
+        }else{
+            EditorGUIUtility.PingObject(m_Palette[index]);
+        }
     }
 
     private void ChangeBorderColor(VisualElement element, Color color){
