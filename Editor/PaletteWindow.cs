@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.UIElements;
@@ -145,11 +146,15 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         var el = rootVisualElement.Q<Image>();
         if(position.width > position.height){
             rootVisualElement.Q<VisualElement>().Query<VisualElement>("responsive-layout").First().style.flexDirection = FlexDirection.Row;
+            m_ScrollView.style.minWidth = new StyleLength(StyleKeyword.None);
+            m_ScrollView.style.minHeight = new StyleLength(new Length(100, LengthUnit.Percent));
             m_ScrollView.contentContainer.style.flexDirection = FlexDirection.Row;
             m_ScrollView.contentViewport.style.flexDirection = FlexDirection.Row;
             m_IsHorizontal = true;
         }else{
-            rootVisualElement.Q<VisualElement>().Query<VisualElement>("responsive-layout").First().style.flexDirection = FlexDirection.Column; 
+            rootVisualElement.Q<VisualElement>().Query<VisualElement>("responsive-layout").First().style.flexDirection = FlexDirection.Column;
+            m_ScrollView.style.minHeight = new StyleLength(StyleKeyword.None);
+            m_ScrollView.style.minWidth = new StyleLength(new Length(100, LengthUnit.Percent));
             m_ScrollView.contentViewport.style.flexDirection = FlexDirection.Column;
             m_ScrollView.contentContainer.style.flexDirection = FlexDirection.Column;
             m_IsHorizontal = false;
@@ -306,8 +311,15 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         {
             
             PlaymodePaletteKeeper.instance.m_TempPalette.Clear();
-            
-            m_Palette.Clear();
+
+            if(!m_IsSearching){
+                m_Palette.Clear();
+            }
+            else
+            {
+                var dic2 = slotToListDictionary.ToDictionary(x => x.Value, x=> x.Key);
+//                var paletteIndex = m_Palette.IndexOf();
+            }
             slotToListDictionary.Clear();
             SetPrefabLabel(NO_PREFAB_TEXT, el.Q<Label>());
             SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(NO_PREFAB_SELECTED_IMAGE_PATH), el.Q<Image>());
