@@ -457,8 +457,11 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
                 PlaymodePaletteKeeper.instance.m_TempPalette[i] = PlaymodePaletteKeeper.instance.m_TempPalette[i + 1];
             }
 
+            m_SearchResult.RemoveAt(m_CurrentIndex);
+
             PlaymodePaletteKeeper.instance.m_TempPalette.RemoveAt(PlaymodePaletteKeeper.instance.m_TempPalette.Count - 1);
 //            slotToListDictionary.Remove(m_Palette.Count - 1);
+            rootVisualElement.Q<ScrollView>().RemoveAt(index);
 
         }
     }
