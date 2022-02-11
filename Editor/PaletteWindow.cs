@@ -22,6 +22,8 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private const string EMPTY_PREFAB_IMAGE_PATH =
         "Packages/com.alirezaft.prefabpalette/Editor/Textures/EmptyPrefab.png";
 
+    private const string ADD_PREFAB_IMAGE_PATH = "Packages/com.alirezaft.prefabpalette/Editor/Textures/AddItem.png";
+
     #endregion
 
     #region uxml element names
@@ -44,6 +46,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     #region texts
 
     private const string NO_PREFAB_TEXT = "No  prefab selected";
+    private const string DRAG_PREFABS_HERE_TEXT = "Drag prefabs here to add to the palette";
 
     #endregion
 
@@ -98,8 +101,8 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         m_PrefabSearchBar.RegisterCallback<ChangeEvent<string>>(OnSearchBarValueChanged);
         rootVisualElement.RegisterCallback<GeometryChangedEvent>(ChangeImageSizeOnWindowSizeChange);
 
-        InstantiateNewPrefabSlot();
-
+//        InstantiateNewPrefabSlot();
+        InstantiateAddPrefabSlot();
         m_Palette = new List<GameObject>();
         slotToListDictionary = new Dictionary<int, int>();
         m_IsInstantiating = false;
@@ -275,6 +278,25 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
         m_NumberOfItems++;
         m_ScrollView.ScrollTo(m_ScrollView.Query<Image>(IMAGE_PREFAB_FIELD).Last());
+    }
+
+    private void InstantiateAddPrefabSlot()
+    {
+        var newSlot = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(PREFAB_SLOT_VISUAL_TREE_PATH);
+        m_ScrollView.Add(newSlot.Instantiate());
+        var createdField = m_ScrollView.Query<Image>(IMAGE_PREFAB_FIELD).Last();
+        
+        if (m_ScrollView.childCount % 2 == 0)
+        {
+            SetSlotBackgroundColor(m_ScrollView.Query<TemplateContainer>().Last(),
+                new Color(EVEN_SLOT_GREY, EVEN_SLOT_GREY, EVEN_SLOT_GREY));
+        }else
+        {
+            SetSlotBackgroundColor(m_ScrollView.Query<TemplateContainer>().Last(),
+                new Color(ODD_SLOT_GREY, ODD_SLOT_GREY, ODD_SLOT_GREY));
+        }
+        SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(ADD_PREFAB_IMAGE_PATH), createdField);
+        SetPrefabLabel(DRAG_PREFABS_HERE_TEXT, m_ScrollView.Query<Label>(LABEL_PREFAB_NAME).Last());
     }
 
     private void SetSlotBackgroundColor(VisualElement vis, Color col)
