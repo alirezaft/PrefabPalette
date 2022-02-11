@@ -5,6 +5,11 @@
     xmlns:editor="UnityEditor.UIElements"
     xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
 >
-    <engine:ScrollView name="prefab-container" style="flex-grow: 1; "/>
-    <engine:Button name="add-prefab-button" text="Add slot" style="margin-top: 7px; align-items: flex-end;"/>
+    <engine:VisualElement name="parent" style="flex-direction: column;">
+        <editor:ToolbarSearchField name="prefab-search-field" style="width: 90%;"/> 
+        <engine:VisualElement name="responsive-layout" style="align-items: flex-end; align-content: stretch;"> 
+            <engine:ScrollView name="prefab-container" style="flex-grow: 1; align-self: end; min-width: 100%;"/>
+            <engine:Button name="add-prefab-button" text="Add slot" style="margin-top: 7px; align-self: stretch;"/>
+        </engine:VisualElement>
+    </engine:VisualElement>
 </engine:UXML>
