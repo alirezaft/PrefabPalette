@@ -112,7 +112,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
         if (PlaymodePaletteKeeper.instance.m_TempPalette.Count > 0)
         {
-            ReloadPaletteAfterPlayMode(PlaymodePaletteKeeper.instance.m_TempPalette);
+//            ReloadPaletteAfterPlayMode(PlaymodePaletteKeeper.instance.m_TempPalette);
         }
 
         m_SearchResult = new List<GameObject>();
@@ -260,7 +260,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         var newSlot = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(PREFAB_SLOT_VISUAL_TREE_PATH);
 //        Debug.Log(m_ScrollView.ElementAt(m_ScrollView.childCount - 1).Q<Label>().t);
 //        newSlot.Instantiate().PlaceBehind(m_ScrollView.ElementAt(m_ScrollView.childCount - 1));
-        m_ScrollView.Insert(m_ScrollView.childCount == 1  ? 0 : m_ScrollView.childCount - 1, newSlot.Instantiate());
+        m_ScrollView.Insert(m_ScrollView.childCount == 1 ? 0 : m_ScrollView.childCount - 1, newSlot.Instantiate());
         var createdField = m_ScrollView.Query<Image>(IMAGE_PREFAB_FIELD).AtIndex(m_ScrollView.childCount - 2);
 
         if (m_ScrollView.childCount % 2 == 0)
@@ -276,7 +276,8 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
         RegisterDragAndDropCallbacks(createdField);
         SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(NO_PREFAB_SELECTED_IMAGE_PATH), createdField);
-        SetPrefabLabel(NO_PREFAB_TEXT, m_ScrollView.Query<Label>(LABEL_PREFAB_NAME).AtIndex(m_ScrollView.childCount - 2));
+        SetPrefabLabel(NO_PREFAB_TEXT,
+            m_ScrollView.Query<Label>(LABEL_PREFAB_NAME).AtIndex(m_ScrollView.childCount - 2));
 
         m_NumberOfItems++;
         m_ScrollView.ScrollTo(m_ScrollView.Query<Image>(IMAGE_PREFAB_FIELD).Last());
@@ -287,21 +288,24 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         var newSlot = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(PREFAB_SLOT_VISUAL_TREE_PATH);
         m_ScrollView.Add(newSlot.Instantiate());
         var createdField = m_ScrollView.Query<Image>(IMAGE_PREFAB_FIELD).Last();
-        
+
         if (m_ScrollView.childCount % 2 == 0)
         {
             SetSlotBackgroundColor(m_ScrollView.Query<TemplateContainer>().Last(),
                 new Color(EVEN_SLOT_GREY, EVEN_SLOT_GREY, EVEN_SLOT_GREY));
-        }else
+        }
+        else
         {
             SetSlotBackgroundColor(m_ScrollView.Query<TemplateContainer>().Last(),
                 new Color(ODD_SLOT_GREY, ODD_SLOT_GREY, ODD_SLOT_GREY));
         }
+
         SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(ADD_PREFAB_IMAGE_PATH), createdField);
         var lbl = m_ScrollView.Query<Label>(LABEL_PREFAB_NAME).Last();
         SetPrefabLabel(DRAG_PREFABS_HERE_TEXT, lbl);
         lbl.style.whiteSpace = new StyleEnum<WhiteSpace>(WhiteSpace.Normal);
         lbl.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
+        RegisterCallbacksForAddPrefabSlot(m_ScrollView.Query<Image>().Last());
     }
 
     private void SetSlotBackgroundColor(VisualElement vis, Color col)
@@ -323,13 +327,79 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         element.AddManipulator(new ContextualMenuManipulator(OnRightClickOnPrefabPreview));
     }
 
-    private void RegisterCallbacksForAddPrefabSlot(VisualElement el)
+    private void RegisterCallbacksForAddPrefabSlot(Image el)
     {
+        el.RegisterCallback<DragPerformEvent>(OnPrefabDroppedInAddItemArea);
+        el.RegisterCallback<DragLeaveEvent>(OnPrefabSlotDragLEave);
+        el.RegisterCallback<DragUpdatedEvent>(OnPrefabDraggedOverAddItemArea);
+    }
+
+    private void OnPrefabDraggedOverAddItemArea(DragUpdatedEvent evt)
+    {
+        var element = evt.target as VisualElement;
+        var parent = element.parent.parent;
+        var index = m_ScrollView.IndexOf(element.parent.parent);
+
+        var prefabs = DragAndDrop.objectReferences;
+        if (prefabs.Count(a => a is GameObject) == prefabs.Length &&
+            prefabs.Count(AssetDatabase.Contains) == prefabs.Length)
+        {
+            ChangeBorderColor(element, Color.green);
+            DragAndDrop.visualMode = DragAndDropVisualMode.Link;
+        }
+        else if (!m_IsInstantiating)
+        {
+            ChangeBorderColor(element, Color.red);
+            DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
+        }
+    }
+
+    private void OnPrefabDroppedInAddItemArea(DragPerformEvent evt)
+    {
+        Debug.Log("I GOT YOUR THING!");
+        var element = evt.target as VisualElement;
+        var index = m_ScrollView.IndexOf(element.parent.parent);
+        // EditorUtility.Select
+        var prefabs = DragAndDrop.objectReferences;
+        ChangeBorderColor(m_ScrollView.Query<Image>().Last());
+        if (prefabs.Count(a => a is GameObject) == prefabs.Length &&
+            prefabs.Count(AssetDatabase.Contains) == prefabs.Length)
+        {
+            foreach (var go in prefabs)
+            {
+                m_Palette.Add(go as GameObject);
+                PlaymodePaletteKeeper.instance.m_TempPalette.Add(go as GameObject);
+                InstantiateNewPrefabSlot();
+                var img = m_ScrollView.Query<Image>().AtIndex(m_ScrollView.childCount - 2);
+                var lbl = m_ScrollView.Query<Label>().AtIndex(m_ScrollView.childCount - 2);
+
+                var preview = GetAssetPreview(go as GameObject);
+
+                if (preview != null)
+                {
+                    SetPrefabSelectorImage(preview, img);
+                }
+                else
+                {
+                    SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(EMPTY_PREFAB_IMAGE_PATH),
+                        img);
+                }
+                
+                SetPrefabLabel(go.name, lbl);
+
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Objects you dragged are either not from your assets or not a prefab");
+        }
+
         
     }
 
     private void OnPrefabSlotDragLEave(DragLeaveEvent evt)
     {
+        Debug.Log("YOURE LEAVING");
         var element = evt.target as VisualElement;
         // var index = m_ScrollView.IndexOf(element.parent.parent);
 
@@ -409,12 +479,12 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(NO_PREFAB_SELECTED_IMAGE_PATH),
                 el.Q<Image>());
             SetPrefabLabel(NO_PREFAB_TEXT, el.Q<Label>());
-            if(!m_IsSearching){
+            if (!m_IsSearching)
+            {
                 PlaymodePaletteKeeper.instance.m_TempPalette.RemoveAt(
                     PlaymodePaletteKeeper.instance.m_TempPalette.Count - 1);
                 m_Palette.RemoveAt(slotToListDictionary[m_CurrentIndex]);
                 slotToListDictionary.Remove(m_CurrentIndex);
-                
             }
             else
             {
@@ -429,7 +499,8 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         }
 
 
-        if(!m_IsSearching){
+        if (!m_IsSearching)
+        {
             for (int i = m_CurrentIndex; i < slotToListDictionary.Count - 1; i++)
             {
                 if (i == m_CurrentIndex)
@@ -445,7 +516,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
                 PlaymodePaletteKeeper.instance.m_TempPalette.Count - 1);
             slotToListDictionary.Remove(m_ScrollView.childCount - 1);
             m_ScrollView.RemoveAt(m_CurrentIndex);
-            
         }
         else
         {
@@ -453,7 +523,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             var palindex = m_Palette.IndexOf(m_SearchResult[m_CurrentIndex]);
             var uiindex = listToSlotDictionary[palindex];
 
-            RemovePrefabFromPaletteAfterSearch(uiindex); 
+            RemovePrefabFromPaletteAfterSearch(uiindex);
         }
 
         m_IsInContextMenu = false;
@@ -467,8 +537,8 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             m_Palette.Clear();
             slotToListDictionary.Clear();
             return;
-        } 
-        
+        }
+
         if (index == m_Palette.Count - 1)
         {
             PlaymodePaletteKeeper.instance.m_TempPalette.RemoveAt(
@@ -491,10 +561,10 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
             m_SearchResult.RemoveAt(m_CurrentIndex);
 
-            PlaymodePaletteKeeper.instance.m_TempPalette.RemoveAt(PlaymodePaletteKeeper.instance.m_TempPalette.Count - 1);
+            PlaymodePaletteKeeper.instance.m_TempPalette.RemoveAt(
+                PlaymodePaletteKeeper.instance.m_TempPalette.Count - 1);
 //            slotToListDictionary.Remove(m_Palette.Count - 1);
             rootVisualElement.Q<ScrollView>().RemoveAt(index);
-
         }
     }
 
