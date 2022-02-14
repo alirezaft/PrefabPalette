@@ -167,22 +167,19 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private void ReloadPaletteForSearch()
     {
         m_ScrollView.Clear();
-        InstantiateNewPrefabSlot();
+        Debug.Log("Rebuilding your palette");
+        InstantiateAddPrefabSlot();
 
         int i = 0;
         foreach (GameObject gameObject in m_Palette)
         {
             Debug.Log(gameObject.name);
-            var img = rootVisualElement.Query<Image>().Last();
+            InstantiateNewPrefabSlot();
+            var img = rootVisualElement.Query<Image>().AtIndex(m_ScrollView.childCount - 2);
             SetPrefabSelectorImage(GetAssetPreview(gameObject), img);
-            var lbl = rootVisualElement.Query<Label>().Last();
+            var lbl = rootVisualElement.Query<Label>().AtIndex(m_ScrollView.childCount - 2);
             SetPrefabLabel(gameObject.name, lbl);
 //            m_Palette.Add(gameObject);
-            if (i != m_Palette.Count - 1)
-            {
-                InstantiateNewPrefabSlot();
-            }
-
             i++;
         }
     }
@@ -441,7 +438,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             }
         }
 
-        ReloadPaletteForSearch(m_SearchResult);
+//        ReloadPaletteForSearch(m_SearchResult);
     }
 
     private void RemovePrefab(DropdownMenuAction action)
