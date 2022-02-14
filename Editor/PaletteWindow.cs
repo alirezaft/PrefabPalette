@@ -143,6 +143,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private void ReloadPaletteForSearch(List<GameObject> pal)
     {
         m_ScrollView.Clear();
+        Debug.Log("Search res count: " + pal.Count);
         if (pal.Count == 0) return;
 
         InstantiateNewPrefabSlot();
@@ -257,24 +258,30 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         var newSlot = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(PREFAB_SLOT_VISUAL_TREE_PATH);
 //        Debug.Log(m_ScrollView.ElementAt(m_ScrollView.childCount - 1).Q<Label>().t);
 //        newSlot.Instantiate().PlaceBehind(m_ScrollView.ElementAt(m_ScrollView.childCount - 1));
-        m_ScrollView.Insert(m_ScrollView.childCount == 1 ? 0 : m_ScrollView.childCount - 1, newSlot.Instantiate());
-        var createdField = m_ScrollView.Query<Image>(IMAGE_PREFAB_FIELD).AtIndex(m_ScrollView.childCount - 2);
+        if(!m_IsSearching){
+            m_ScrollView.Insert(m_ScrollView.childCount == 1 ? 0 : m_ScrollView.childCount - 1, newSlot.Instantiate());
+        }
+        else
+        {
+            m_ScrollView.Add(newSlot.Instantiate());
+        }
+        var createdField = m_ScrollView.Query<Image>(IMAGE_PREFAB_FIELD).AtIndex(m_IsSearching ? m_ScrollView.childCount - 1 : m_ScrollView.childCount - 2);
 
         if (m_ScrollView.childCount % 2 == 0)
         {
-            SetSlotBackgroundColor(m_ScrollView.Query<TemplateContainer>().AtIndex(m_ScrollView.childCount - 2),
+            SetSlotBackgroundColor(m_ScrollView.Query<TemplateContainer>().AtIndex(m_IsSearching ? m_ScrollView.childCount - 1 : m_ScrollView.childCount - 2),
                 new Color(EVEN_SLOT_GREY, EVEN_SLOT_GREY, EVEN_SLOT_GREY));
         }
         else
         {
-            SetSlotBackgroundColor(m_ScrollView.Query<TemplateContainer>().AtIndex(m_ScrollView.childCount - 2),
+            SetSlotBackgroundColor(m_ScrollView.Query<TemplateContainer>().AtIndex(m_IsSearching ? m_ScrollView.childCount - 1 : m_ScrollView.childCount - 2),
                 new Color(ODD_SLOT_GREY, ODD_SLOT_GREY, ODD_SLOT_GREY));
         }
 
         RegisterDragAndDropCallbacks(createdField);
         SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(NO_PREFAB_SELECTED_IMAGE_PATH), createdField);
         SetPrefabLabel(NO_PREFAB_TEXT,
-            m_ScrollView.Query<Label>(LABEL_PREFAB_NAME).AtIndex(m_ScrollView.childCount - 2));
+            m_ScrollView.Query<Label>(LABEL_PREFAB_NAME).AtIndex(m_IsSearching ? m_ScrollView.childCount - 1 : m_ScrollView.childCount - 2));
 
         m_NumberOfItems++;
         m_ScrollView.ScrollTo(m_ScrollView.Query<Image>(IMAGE_PREFAB_FIELD).Last());
@@ -438,7 +445,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             }
         }
 
-//        ReloadPaletteForSearch(m_SearchResult);
+        ReloadPaletteForSearch(m_SearchResult);
     }
 
     private void RemovePrefab(DropdownMenuAction action)
