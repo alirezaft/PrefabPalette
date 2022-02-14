@@ -416,11 +416,9 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         bool foundGo = slotToListDictionary.ContainsKey(m_CurrentIndex) &&
                        m_Palette[slotToListDictionary[m_CurrentIndex]] != null;
 
-        evt.menu.AppendAction("Remove prefab", RemovePrefab,
-            foundGo ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+        evt.menu.AppendAction("Remove prefab", RemovePrefab);
 
-        evt.menu.AppendAction("Ping", PingPrefabAsset,
-            foundGo ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+        evt.menu.AppendAction("Ping", PingPrefabAsset);
     }
 
     private void OnSearchBarValueChanged(ChangeEvent<string> evt)
@@ -450,28 +448,9 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     {
         var el = m_ScrollView.ElementAt(m_CurrentIndex);
 
-        if (slotToListDictionary.Count == 1 && m_Palette.Count == 1 && m_ScrollView.childCount == 1)
+        if (!m_IsSearching)
         {
-            PlaymodePaletteKeeper.instance.m_TempPalette.Clear();
-            SetPrefabLabel(NO_PREFAB_TEXT, el.Q<Label>());
-            SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(NO_PREFAB_SELECTED_IMAGE_PATH),
-                el.Q<Image>());
-
-            if (m_IsSearching)
-            {
-                var listToSlotDictionary = slotToListDictionary.ToDictionary(x => x.Value, x => x.Key);
-                var palindex = m_Palette.IndexOf(m_SearchResult[m_CurrentIndex]);
-                var uiindex = listToSlotDictionary[palindex];
-
-                RemovePrefabFromPaletteAfterSearch(uiindex);
-            }
-            else
-            {
-                m_Palette.Clear();
-                slotToListDictionary.Clear();
-            }
-
-            return;
+            m_Palette.RemoveAt(m_CurrentIndex);
         }
 
         if (m_CurrentIndex == m_ScrollView.childCount - 1)
