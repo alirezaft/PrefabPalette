@@ -655,19 +655,12 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         {
             if (prefabs[0] is GameObject && AssetDatabase.Contains(prefabs[0]))
             {
-                if (!slotToListDictionary.ContainsKey(index))
-                {
-                    m_Palette.Add(prefabs[0] as GameObject);
-                    slotToListDictionary.Add(index, m_Palette.Count - 1);
-                    PlaymodePaletteKeeper.instance.m_TempPalette.Add(prefabs[0] as GameObject);
+                
+                m_Palette[index] = prefabs[0] as GameObject;
+                PlaymodePaletteKeeper.instance.m_TempPalette[index] = prefabs[0] as GameObject;
 //                    m_Palette.Add(prefabs[0] as GameObject);
-                }
-                else
-                {
-                    m_Palette.Insert(slotToListDictionary[index], prefabs[0] as GameObject);
-                    PlaymodePaletteKeeper.instance.m_TempPalette.Insert(slotToListDictionary[index],
-                        prefabs[0] as GameObject);
-                }
+                
+                
 
                 var preview = GetAssetPreview(prefabs[0] as GameObject);
 
