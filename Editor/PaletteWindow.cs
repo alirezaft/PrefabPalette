@@ -101,7 +101,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         m_PrefabSearchBar.RegisterCallback<ChangeEvent<string>>(OnSearchBarValueChanged);
         rootVisualElement.RegisterCallback<GeometryChangedEvent>(ChangeImageSizeOnWindowSizeChange);
 
-//        InstantiateNewPrefabSlot();
         InstantiateAddPrefabSlot();
         m_Palette = new List<GameObject>();
         slotToListDictionary = new Dictionary<int, int>();
@@ -112,7 +111,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
         if (PlaymodePaletteKeeper.instance.m_TempPalette.Count > 0)
         {
-//            ReloadPaletteAfterPlayMode(PlaymodePaletteKeeper.instance.m_TempPalette);
+            ReloadPaletteAfterPlayMode(PlaymodePaletteKeeper.instance.m_TempPalette);
         }
 
         m_SearchResult = new List<GameObject>();
@@ -121,11 +120,12 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private void ReloadPaletteAfterPlayMode(List<GameObject> pal)
     {
         m_ScrollView.Clear();
+        InstantiateAddPrefabSlot();
         InstantiateNewPrefabSlot();
         int i = 0;
         foreach (GameObject gameObject in pal)
         {
-            var img = rootVisualElement.Query<Image>().Last();
+            var img = rootVisualElement.Query<Image>().AtIndex(m_IsSearching ? m_ScrollView.childCount - 1 : m_ScrollView.childCount - 2);
             SetPrefabSelectorImage(GetAssetPreview(gameObject), img);
             var lbl = rootVisualElement.Query<Label>().Last();
             SetPrefabLabel(gameObject.name, lbl);
@@ -463,50 +463,9 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             m_ScrollView.RemoveAt(m_CurrentIndex);
         }
 
-        
-
         m_IsInContextMenu = false;
         m_CurrentIndex = -1;
     }
-
-    private void RemovePrefabFromPaletteAfterSearch(int index)
-    {
-        if (m_Palette.Count == 1)
-        {
-            m_Palette.Clear();
-            slotToListDictionary.Clear();
-            return;
-        }
-
-        if (index == m_Palette.Count - 1)
-        {
-            PlaymodePaletteKeeper.instance.m_TempPalette.RemoveAt(
-                PlaymodePaletteKeeper.instance.m_TempPalette.Count - 1);
-            m_Palette.RemoveAt(slotToListDictionary[index]);
-            slotToListDictionary.Remove(index);
-        }
-        else
-        {
-            for (int i = index; i < slotToListDictionary.Count - 1; i++)
-            {
-                if (i == index)
-                {
-                    m_Palette.RemoveAt(slotToListDictionary[index]);
-                }
-
-                slotToListDictionary[i] = slotToListDictionary[i + 1] - 1;
-                PlaymodePaletteKeeper.instance.m_TempPalette[i] = PlaymodePaletteKeeper.instance.m_TempPalette[i + 1];
-            }
-
-            m_SearchResult.RemoveAt(m_CurrentIndex);
-
-            PlaymodePaletteKeeper.instance.m_TempPalette.RemoveAt(
-                PlaymodePaletteKeeper.instance.m_TempPalette.Count - 1);
-//            slotToListDictionary.Remove(m_Palette.Count - 1);
-            rootVisualElement.Q<ScrollView>().RemoveAt(index);
-        }
-    }
-
 
     private void SavePalette()
     {
