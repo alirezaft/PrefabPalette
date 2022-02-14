@@ -651,7 +651,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         var index = m_ScrollView.IndexOf(element.parent.parent);
         // EditorUtility.Select
         var prefabs = DragAndDrop.objectReferences;
-        if (prefabs.Length > 0)
+        if (prefabs.Length == 1)
         {
             if (prefabs[0] is GameObject && AssetDatabase.Contains(prefabs[0]))
             {
@@ -676,6 +676,10 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
                 SetPrefabLabel(prefabs[0].name, element.parent.Q<Label>());
             }
+        }
+        else
+        {
+            Debug.LogWarning("You can't drop more than one prefab into a single slot.");
         }
 
         ChangeBorderColor(element, Color.white);
