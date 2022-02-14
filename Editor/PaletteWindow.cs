@@ -744,14 +744,9 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         var parent = element.parent.parent;
         var index = m_ScrollView.IndexOf(element.parent.parent);
 
-        if (!slotToListDictionary.ContainsKey(index))
-        {
-            return;
-        }
-
         m_CurrentElemetn = element;
 
-        if (!m_IsInstantiating && slotToListDictionary.ContainsKey(index) && evt.button != 1)
+        if (!m_IsInstantiating && evt.button != 1)
         {
             m_CurrentIndex = index;
             ChangeBorderColor(element, Color.blue);
@@ -767,7 +762,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             DragAndDrop.PrepareStartDrag();
             DragAndDrop.StartDrag("Instantiate");
             DragAndDrop.visualMode = DragAndDropVisualMode.Link;
-            DragAndDrop.objectReferences = new Object[] {m_Palette[slotToListDictionary[m_CurrentIndex]]};
+            DragAndDrop.objectReferences = new Object[] {m_Palette[m_CurrentIndex]};
             m_IsClicked = false;
         }
         else if (m_IsClicked && m_IsSearching)
