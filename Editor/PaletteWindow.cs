@@ -456,58 +456,14 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         {
             m_Palette.RemoveAt(m_CurrentIndex);
         }
-
-        if (m_CurrentIndex == m_ScrollView.childCount - 1)
-        {
-            SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(NO_PREFAB_SELECTED_IMAGE_PATH),
-                el.Q<Image>());
-            SetPrefabLabel(NO_PREFAB_TEXT, el.Q<Label>());
-            if (!m_IsSearching)
-            {
-                PlaymodePaletteKeeper.instance.m_TempPalette.RemoveAt(
-                    PlaymodePaletteKeeper.instance.m_TempPalette.Count - 1);
-                m_Palette.RemoveAt(slotToListDictionary[m_CurrentIndex]);
-                slotToListDictionary.Remove(m_CurrentIndex);
-            }
-            else
-            {
-                var listToSlotDictionary = slotToListDictionary.ToDictionary(x => x.Value, x => x.Key);
-                var palindex = m_Palette.IndexOf(m_SearchResult[m_CurrentIndex]);
-                var uiindex = listToSlotDictionary[palindex];
-
-                RemovePrefabFromPaletteAfterSearch(uiindex);
-            }
-
-            return;
-        }
-
-
-        if (!m_IsSearching)
-        {
-            for (int i = m_CurrentIndex; i < slotToListDictionary.Count - 1; i++)
-            {
-                if (i == m_CurrentIndex)
-                {
-                    m_Palette.RemoveAt(slotToListDictionary[m_CurrentIndex]);
-                }
-
-                slotToListDictionary[i] = slotToListDictionary[i + 1] - 1;
-                PlaymodePaletteKeeper.instance.m_TempPalette[i] = PlaymodePaletteKeeper.instance.m_TempPalette[i + 1];
-            }
-
-            PlaymodePaletteKeeper.instance.m_TempPalette.RemoveAt(
-                PlaymodePaletteKeeper.instance.m_TempPalette.Count - 1);
-            slotToListDictionary.Remove(m_ScrollView.childCount - 1);
-            m_ScrollView.RemoveAt(m_CurrentIndex);
-        }
         else
         {
-            var listToSlotDictionary = slotToListDictionary.ToDictionary(x => x.Value, x => x.Key);
-            var palindex = m_Palette.IndexOf(m_SearchResult[m_CurrentIndex]);
-            var uiindex = listToSlotDictionary[palindex];
-
-            RemovePrefabFromPaletteAfterSearch(uiindex);
+            m_Palette.RemoveAt(m_Palette.IndexOf(m_SearchResult[m_CurrentIndex]));
+            m_SearchResult.RemoveAt(m_CurrentIndex);
+            m_ScrollView.RemoveAt(m_CurrentIndex);
         }
+
+        
 
         m_IsInContextMenu = false;
         m_CurrentIndex = -1;
