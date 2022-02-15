@@ -28,7 +28,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     #region uxml element names
 
-    private const string BUTTON_ADD_PREFAB = "add-prefab-button";
     private const string SCROLL_VIEW_PREFAB_CONTAINER = "prefab-container";
     private const string IMAGE_PREFAB_FIELD = "prefab-field";
     private const string LABEL_PREFAB_NAME = "prefab-name";
@@ -91,7 +90,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         uxmlFile.CloneTree(root);
         m_NumberOfItems = 1;
 
-        root.Query<Button>(BUTTON_ADD_PREFAB).First().clicked += OnAddSlotButtonPressed;
         m_PrefabSearchBar = root.Q<ToolbarSearchField>(TEXT_FIELD_PREFAB_SEARCH_BAR);
         m_ScrollView = root.Query<ScrollView>(SCROLL_VIEW_PREFAB_CONTAINER).First();
 
@@ -671,11 +669,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         DragAndDrop.visualMode = DragAndDropVisualMode.None;
         m_IsInstantiating = false;
         ChangeBorderColor(element);
-    }
-
-    private void OnAddSlotButtonPressed()
-    {
-        InstantiateNewPrefabSlot();
     }
 
     private void SetPrefabLabel(string text, Label label)
