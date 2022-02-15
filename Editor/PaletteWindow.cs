@@ -441,15 +441,16 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     private void RemovePrefab(DropdownMenuAction action)
     {
-        var el = m_ScrollView.ElementAt(m_CurrentIndex);
 
         if (!m_IsSearching)
         {
             m_Palette.RemoveAt(m_CurrentIndex);
+            PlaymodePaletteKeeper.instance.m_TempPalette.RemoveAt(m_CurrentIndex);
         }
         else
         {
             m_Palette.RemoveAt(m_Palette.IndexOf(m_SearchResult[m_CurrentIndex]));
+            PlaymodePaletteKeeper.instance.m_TempPalette.RemoveAt(PlaymodePaletteKeeper.instance.m_TempPalette.IndexOf(m_SearchResult[m_CurrentIndex]));
             m_SearchResult.RemoveAt(m_CurrentIndex);
             m_ScrollView.RemoveAt(m_CurrentIndex);
         }
@@ -487,7 +488,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     private void NewPalette()
     {
-        PlaymodePaletteKeeper.instance.m_TempPalette = new List<GameObject>();
+        PlaymodePaletteKeeper.instance.m_TempPalette.Clear();
         m_ScrollView.Clear();
         m_Palette.Clear();
         InstantiateAddPrefabSlot();
