@@ -71,7 +71,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private bool m_IsClicked;
 
     private List<GameObject> m_Palette;
-    private Dictionary<int, int> slotToListDictionary;
     private List<GameObject> m_SearchResult;
 
     private ScrollView m_ScrollView;
@@ -103,7 +102,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
         InstantiateAddPrefabSlot();
         m_Palette = new List<GameObject>();
-        slotToListDictionary = new Dictionary<int, int>();
         m_IsInstantiating = false;
         m_ManualGeometryChange = false;
         m_IsSearching = false;
@@ -130,7 +128,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             var lbl = rootVisualElement.Query<Label>().Last();
             SetPrefabLabel(gameObject.name, lbl);
             m_Palette.Add(gameObject);
-            slotToListDictionary.Add(m_ScrollView.childCount - 1, m_Palette.Count - 1);
             if (i != pal.Count - 1)
             {
                 InstantiateNewPrefabSlot();
@@ -416,10 +413,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         var element = evt.target as VisualElement;
         m_CurrentIndex = m_ScrollView.IndexOf(element.parent.parent);
         m_IsInContextMenu = true;
-
-        bool foundGo = slotToListDictionary.ContainsKey(m_CurrentIndex) &&
-                       m_Palette[slotToListDictionary[m_CurrentIndex]] != null;
-
+        
         evt.menu.AppendAction("Remove prefab", RemovePrefab);
 
         evt.menu.AppendAction("Ping", PingPrefabAsset);
@@ -499,8 +493,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         PlaymodePaletteKeeper.instance.m_TempPalette = new List<GameObject>();
         m_ScrollView.Clear();
         m_Palette.Clear();
-        slotToListDictionary.Clear();
-        InstantiateNewPrefabSlot();
+        InstantiateAddPrefabSlot();
     }
 
     private void PaintUIOnLoad(PaletteData loadedPalette)
@@ -508,7 +501,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         PlaymodePaletteKeeper.instance.m_TempPalette = new List<GameObject>(loadedPalette.Palette);
         m_ScrollView.Clear();
         m_Palette.Clear();
-        slotToListDictionary.Clear();
         int i = 0;
 
         foreach (GameObject go in loadedPalette.Palette)
@@ -527,7 +519,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
             }
 
             var slotlabel = m_ScrollView.Query<Label>("prefab-name").Last();
-            slotToListDictionary.Add(i, i);
             m_Palette.Add(go);
             SetPrefabLabel(go.name, slotlabel);
             i++;
@@ -714,15 +705,13 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     private void PingPrefabAsset(DropdownMenuAction action)
     {
-        int index = slotToListDictionary[m_CurrentIndex];
-
         if (m_IsSearching)
         {
             EditorGUIUtility.PingObject(m_SearchResult[m_CurrentIndex]);
         }
         else
         {
-            EditorGUIUtility.PingObject(m_Palette[index]);
+            EditorGUIUtility.PingObject(m_Palette[m_CurrentIndex]);
         }
     }
 
