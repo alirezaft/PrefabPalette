@@ -400,7 +400,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     private void OnPrefabSlotDragLEave(DragLeaveEvent evt)
     {
-        Debug.Log("YOURE LEAVING");
         var element = evt.target as VisualElement;
         // var index = m_ScrollView.IndexOf(element.parent.parent);
 
@@ -502,11 +501,12 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         m_ScrollView.Clear();
         m_Palette.Clear();
         int i = 0;
-
+        InstantiateAddPrefabSlot();
+        
         foreach (GameObject go in loadedPalette.Palette)
         {
             InstantiateNewPrefabSlot();
-            var slotimg = m_ScrollView.Query<Image>("prefab-field").Last();
+            var slotimg = m_ScrollView.Query<Image>("prefab-field").AtIndex(m_ScrollView.childCount - 2);
             var preview = GetAssetPreview(go);
 
             if (preview != null)
@@ -518,7 +518,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
                 SetPrefabSelectorImage(AssetDatabase.LoadAssetAtPath<Texture2D>(EMPTY_PREFAB_IMAGE_PATH), slotimg);
             }
 
-            var slotlabel = m_ScrollView.Query<Label>("prefab-name").Last();
+            var slotlabel = m_ScrollView.Query<Label>("prefab-name").AtIndex(m_ScrollView.childCount - 2);
             m_Palette.Add(go);
             SetPrefabLabel(go.name, slotlabel);
             i++;
