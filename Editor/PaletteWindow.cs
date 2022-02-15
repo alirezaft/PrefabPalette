@@ -123,7 +123,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         {
             var img = rootVisualElement.Query<Image>().AtIndex(m_IsSearching ? m_ScrollView.childCount - 1 : m_ScrollView.childCount - 2);
             SetPrefabSelectorImage(GetAssetPreview(gameObject), img);
-            var lbl = rootVisualElement.Query<Label>().Last();
+            var lbl = rootVisualElement.Query<Label>().AtIndex(m_IsSearching ? m_ScrollView.childCount - 1 : m_ScrollView.childCount - 2);
             SetPrefabLabel(gameObject.name, lbl);
             m_Palette.Add(gameObject);
             if (i != pal.Count - 1)
