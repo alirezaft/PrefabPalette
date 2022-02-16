@@ -446,6 +446,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
         {
             m_Palette.RemoveAt(m_CurrentIndex);
             PlaymodePaletteKeeper.instance.m_TempPalette.RemoveAt(m_CurrentIndex);
+            m_ScrollView.RemoveAt(m_CurrentIndex);
         }
         else
         {

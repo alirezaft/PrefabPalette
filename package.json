@@ -1,6 +1,6 @@
 {
   "name": "com.alirezaft.prefabpalette",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "displayName": "Prefab Palette",
   "description": "A palette to put your frequently used prefabs in it.",
   "unity": "2020.2",
