@@ -138,14 +138,12 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private void ReloadPaletteForSearch(List<GameObject> pal)
     {
         m_ScrollView.Clear();
-        Debug.Log("Search res count: " + pal.Count);
         if (pal.Count == 0) return;
 
         InstantiateNewPrefabSlot();
         int i = 0;
         foreach (GameObject gameObject in pal)
         {
-            Debug.Log(gameObject.name);
             var img = rootVisualElement.Query<Image>().Last();
             SetPrefabSelectorImage(GetAssetPreview(gameObject), img);
             var lbl = rootVisualElement.Query<Label>().Last();
@@ -163,13 +161,11 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private void ReloadPaletteForSearch()
     {
         m_ScrollView.Clear();
-        Debug.Log("Rebuilding your palette");
         InstantiateAddPrefabSlot();
 
         int i = 0;
         foreach (GameObject gameObject in m_Palette)
         {
-            Debug.Log(gameObject.name);
             InstantiateNewPrefabSlot();
             var img = rootVisualElement.Query<Image>().AtIndex(m_ScrollView.childCount - 2);
             SetPrefabSelectorImage(GetAssetPreview(gameObject), img);
@@ -251,8 +247,7 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     {
         m_AddingNewSlot = true;
         var newSlot = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(PREFAB_SLOT_VISUAL_TREE_PATH);
-//        Debug.Log(m_ScrollView.ElementAt(m_ScrollView.childCount - 1).Q<Label>().t);
-//        newSlot.Instantiate().PlaceBehind(m_ScrollView.ElementAt(m_ScrollView.childCount - 1));
+
         if(!m_IsSearching){
             m_ScrollView.Insert(m_ScrollView.childCount == 1 ? 0 : m_ScrollView.childCount - 1, newSlot.Instantiate());
         }
@@ -355,7 +350,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
 
     private void OnPrefabDroppedInAddItemArea(DragPerformEvent evt)
     {
-        Debug.Log("I GOT YOUR THING!");
         var element = evt.target as VisualElement;
         var index = m_ScrollView.IndexOf(element.parent.parent);
         // EditorUtility.Select
@@ -419,7 +413,6 @@ public class PaletteWindow : EditorWindow, IHasCustomMenu
     private void OnSearchBarValueChanged(ChangeEvent<string> evt)
     {
         m_SearchResult.Clear();
-        Debug.Log("\"" + evt.newValue + "\"");
         if (evt.newValue.Equals(""))
         {
             m_IsSearching = false;
